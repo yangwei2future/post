@@ -5,12 +5,16 @@ from openai import OpenAI
 import json
 from datetime import datetime
 import re
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+import feedparser
+from config import NEWS_SOURCES, MAX_ARTICLES_PER_SOURCE, MAX_TOTAL_ARTICLES, MAX_ARTICLES_PER_PRIORITY, AI_KEYWORDS, REQUEST_TIMEOUT, RETRY_COUNT, RETRY_DELAY
 
 # 配置OpenAI API
 # 请将下面的"your_actual_api_key_here"替换为您从deepseek获取的实际API密钥
@@ -42,58 +46,70 @@ def get_tenant_access_token(app_id, app_secret):
         print(f"获取tenant_access_token时出错: {e}")
         return None
 
-def get_ai_news(url):
+def get_ai_news_from_source(url, source_name="机器之心"):
     """从指定URL获取AI新闻"""
     try:
-        # 设置Chrome选项
+        print(f"正在从 {source_name} 获取新闻...")
+        
+        # 根据不同的数据源使用不同的解析策略
+        if source_name == "机器之心":
+            return get_jiqizhixin_news(url, source_name)
+        elif source_name == "36氪":
+            return get_36kr_news(url, source_name)
+        elif source_name == "InfoQ":
+            return get_infoq_news(url, source_name)
+        elif source_name == "AMiner":
+            return get_aminer_news(url, source_name)
+        elif source_name == "雷锋网":
+            return get_leiphone_news(url, source_name)
+        elif source_name == "VentureBeat":
+            return get_venturebeat_news(url, source_name)
+        elif source_name == "TechCrunch":
+            return get_techcrunch_news(url, source_name)
+        elif source_name.endswith("RSS") or "rss" in source_name.lower():
+            return get_rss_news(url, source_name)
+        elif source_name.endswith("API") or "api" in source_name.lower():
+            return get_api_news(url, source_name)
+        else:
+            return get_generic_news(url, source_name)
+    except Exception as e:
+        print(f"从 {source_name} 获取新闻时出错 {url}: {e}")
+        return []
+
+def get_jiqizhixin_news(url, source_name):
+    """获取机器之心新闻"""
+    try:
         chrome_options = Options()
-        chrome_options.add_argument("--headless")  # 无头模式
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
         
-        # 初始化WebDriver
-        from webdriver_manager.chrome import ChromeDriverManager
-        from selenium.webdriver.chrome.service import Service
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.get(url)
         
-        # 等待页面加载完成
         wait = WebDriverWait(driver, 10)
-        
-        # 等待新闻内容加载完成
-        # 根据网站的实际结构，等待特定元素出现
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "home__left-body")))
         
-        # 获取页面源码
         page_source = driver.page_source
         driver.quit()
         
-        # 使用BeautifulSoup解析页面
         soup = BeautifulSoup(page_source, "html.parser")
         articles = []
         
-        # 查找新闻条目 - 尝试多种选择器以获取更多新闻
-        # 1. 首先尝试body-title类
         news_items = soup.find_all("a", class_="body-title")
         
-        # 2. 如果没找到足够的新闻，尝试其他可能的类名
         if len(news_items) < 5:
             more_items = soup.find_all("a", class_=["article-item", "news-item", "post-title", "title"])
             news_items.extend(more_items)
         
-        # 3. 如果还是没找到足够的新闻，尝试更通用的方法
         if len(news_items) < 5:
-            # 查找所有可能包含新闻标题的元素
             potential_titles = soup.find_all(["h1", "h2", "h3", "h4"], class_=re.compile(r"title|heading|headline"))
-            # 或者查找所有链接
             more_items = soup.find_all("a", href=re.compile(r"articles|news|post|reference"))
             news_items.extend(more_items)
         
-        # 4. 如果还是没找到足够的新闻，查找包含AI相关关键词的链接
         if len(news_items) < 5:
-            # 查找所有链接并筛选包含AI相关关键词的链接
             all_links = soup.find_all("a", href=True)
             ai_links = []
             for link in all_links:
@@ -102,104 +118,574 @@ def get_ai_news(url):
                     ai_links.append(link)
             news_items.extend(ai_links)
         
-        if news_items:
-            for item in news_items:
-                title = item.get_text(strip=True)
-                # 确保标题有足够的长度
-                if len(title) < 5:
-                    continue
-                    
-                link = item.get("href", "")
-                # 确保链接是完整的URL
-                if link:
-                    if not link.startswith("http"):
-                        if link.startswith("/"):
-                            link = "https://www.jiqizhixin.com" + link
-                        else:
-                            link = "https://www.jiqizhixin.com/" + link
-                else:
-                    # 如果href为空，尝试从onclick或其他属性获取链接
-                    onclick = item.get("onclick", "")
-                    if onclick:
-                        # 尝试从onclick中提取链接
-                        # 匹配更广泛的URL模式
-                        match = re.search(r"'(https?://[^']+)'", onclick)
+        for item in news_items:
+            title = item.get_text(strip=True)
+            if len(title) < 5:
+                continue
+                
+            link = item.get("href", "")
+            if link:
+                if not link.startswith("http"):
+                    if link.startswith("/"):
+                        link = "https://www.jiqizhixin.com" + link
+                    else:
+                        link = "https://www.jiqizhixin.com/" + link
+            else:
+                onclick = item.get("onclick", "")
+                if onclick:
+                    match = re.search(r"'(https?://[^']+)'", onclick)
+                    if match:
+                        link = match.group(1)
+                    else:
+                        match = re.search(r"'(/articles/[^']+)'", onclick)
                         if match:
-                            link = match.group(1)
-                        else:
-                            # 尝试匹配相对路径
-                            match = re.search(r"'(/articles/[^']+)'", onclick)
-                            if match:
-                                link = "https://www.jiqizhixin.com" + match.group(1)
-                    # 如果还是没有链接，使用item的父元素中的data-href属性或其他可能的属性
-                    if not link:
-                        data_href = item.get("data-href", "")
-                        if data_href:
-                            if not data_href.startswith("http"):
-                                if data_href.startswith("/"):
-                                    link = "https://www.jiqizhixin.com" + data_href
-                                else:
-                                    link = "https://www.jiqizhixin.com/" + data_href
-                            else:
-                                link = data_href
-                
-                # 跳过没有链接的条目
+                            link = "https://www.jiqizhixin.com" + match.group(1)
                 if not link:
-                    continue
-                
-                # 尝试获取日期信息
-                date = datetime.now().strftime("%m月%d日")  # 默认日期
-                
-                # 查找父元素中的日期信息
-                parent = item.find_parent()
-                if parent:
-                    # 查找日期元素
-                    date_elements = parent.find_all(string=re.compile(r"\d{1,2}月\d{1,2}日"))
-                    if date_elements:
-                        date_match = re.search(r"\d{1,2}月\d{1,2}日", str(date_elements[0]))
-                        if date_match:
-                            date = date_match.group(0)
-                
-                articles.append({"title": title, "link": link, "date": date})
-        else:
-            # 如果找不到特定的新闻元素，尝试通用方法
-            # 查找所有链接作为可能的新闻
-            links = soup.find_all("a", href=True)
-            for link in links:
-                title = link.get_text(strip=True)
-                href = link.get("href", "")
-                # 筛选可能是新闻的链接
-                if title and len(title) > 10 and (href.startswith("/articles/") or "jiqizhixin.com" in href):
-                    if not href.startswith("http"):
-                        href = "https://www.jiqizhixin.com" + href
-                    
-                    # 尝试获取日期信息
-                    date = datetime.now().strftime("%m月%d日")  # 默认日期
-                    
-                    articles.append({"title": title, "link": href, "date": date})
+                    data_href = item.get("data-href", "")
+                    if data_href:
+                        if not data_href.startswith("http"):
+                            if data_href.startswith("/"):
+                                link = "https://www.jiqizhixin.com" + data_href
+                            else:
+                                link = "https://www.jiqizhixin.com/" + data_href
+                        else:
+                            link = data_href
+            
+            if not link:
+                continue
+            
+            date = datetime.now().strftime("%m月%d日")
+            parent = item.find_parent()
+            if parent:
+                date_elements = parent.find_all(string=re.compile(r"\d{1,2}月\d{1,2}日"))
+                if date_elements:
+                    date_match = re.search(r"\d{1,2}月\d{1,2}日", str(date_elements[0]))
+                    if date_match:
+                        date = date_match.group(0)
+            
+            articles.append({"title": title, "link": link, "date": date, "source": source_name})
         
-        # 去重 - 优先基于标题去重，避免重复内容
-        seen_titles = set()
-        unique_articles = []
-        for article in articles:
-            # 清理标题，去除多余空格和特殊字符
-            clean_title = article["title"].strip()
-            # 使用标题作为去重的主要依据
-            if clean_title not in seen_titles and len(clean_title) > 10:
-                seen_titles.add(clean_title)
-                unique_articles.append(article)
-        
-        # 限制返回的新闻数量
-        return unique_articles[:15]  # 返回前15条新闻
-        
+        return articles
     except Exception as e:
-        print(f"获取新闻时出错 {url}: {e}")
+        print(f"获取机器之心新闻时出错: {e}")
         return []
+
+def get_36kr_news(url, source_name):
+    """获取36氪AI新闻"""
+    try:
+        # 先尝试使用requests获取
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1"
+        }
+        
+        response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        articles = []
+        
+        # 尝试多种可能的类名和选择器
+        news_items = []
+        
+        # 方法1：寻找文章链接
+        news_items.extend(soup.find_all("a", class_=["item-title", "article-title", "title", "post-title"]))
+        
+        # 方法2：寻找包含AI关键词的链接
+        if len(news_items) < 5:
+            all_links = soup.find_all("a", href=True)
+            for link in all_links:
+                text = link.get_text(strip=True)
+                if len(text) > 10 and any(keyword in text.lower() for keyword in AI_KEYWORDS):
+                    news_items.append(link)
+        
+        # 方法3：寻找特定的文章容器
+        if len(news_items) < 5:
+            news_items.extend(soup.find_all("div", class_=re.compile(r"item|article|post")))
+        
+        for item in news_items:
+            # 如果是div容器，需要从中提取链接
+            if item.name == "div":
+                link_element = item.find("a")
+                if not link_element:
+                    continue
+                title = link_element.get_text(strip=True)
+                link = link_element.get("href", "")
+            else:
+                title = item.get_text(strip=True)
+                link = item.get("href", "")
+            
+            if len(title) < 5:
+                continue
+                
+            if link:
+                if not link.startswith("http"):
+                    if link.startswith("/"):
+                        link = "https://36kr.com" + link
+                    else:
+                        link = "https://36kr.com/" + link
+            
+            if not link:
+                continue
+            
+            # 筛选AI相关新闻
+            if not any(keyword in title.lower() for keyword in AI_KEYWORDS):
+                continue
+            
+            date = datetime.now().strftime("%m月%d日")
+            
+            # 尝试从父元素获取日期
+            parent = item.find_parent()
+            if parent:
+                time_element = parent.find("time") or parent.find("span", class_=re.compile(r"time|date"))
+                if time_element:
+                    date_text = time_element.get_text(strip=True)
+                    date_match = re.search(r"\d{1,2}月\d{1,2}日", date_text)
+                    if date_match:
+                        date = date_match.group(0)
+            
+            articles.append({"title": title, "link": link, "date": date, "source": source_name})
+        
+        return articles
+    except Exception as e:
+        print(f"获取36氪新闻时出错: {e}")
+        return []
+
+def get_infoq_news(url, source_name):
+    """获取InfoQ AI新闻"""
+    try:
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        articles = []
+        
+        news_items = soup.find_all("a", class_=["news-title", "article-title", "title"])
+        
+        for item in news_items:
+            title = item.get_text(strip=True)
+            if len(title) < 5:
+                continue
+                
+            link = item.get("href", "")
+            if link:
+                if not link.startswith("http"):
+                    if link.startswith("/"):
+                        link = "https://www.infoq.cn" + link
+                    else:
+                        link = "https://www.infoq.cn/" + link
+            
+            if not link:
+                continue
+            
+            # 筛选AI相关新闻
+            if not any(keyword in title.lower() for keyword in AI_KEYWORDS):
+                continue
+            
+            date = datetime.now().strftime("%m月%d日")
+            
+            articles.append({"title": title, "link": link, "date": date, "source": source_name})
+        
+        return articles
+    except Exception as e:
+        print(f"获取InfoQ新闻时出错: {e}")
+        return []
+
+def get_aminer_news(url, source_name):
+    """获取AMiner AI新闻"""
+    try:
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        articles = []
+        
+        news_items = soup.find_all("a", class_=["title", "paper-title", "article-title"])
+        
+        for item in news_items:
+            title = item.get_text(strip=True)
+            if len(title) < 5:
+                continue
+                
+            link = item.get("href", "")
+            if link:
+                if not link.startswith("http"):
+                    if link.startswith("/"):
+                        link = "https://www.aminer.cn" + link
+                    else:
+                        link = "https://www.aminer.cn/" + link
+            
+            if not link:
+                continue
+            
+            # 筛选AI相关新闻
+            if not any(keyword in title.lower() for keyword in AI_KEYWORDS):
+                continue
+            
+            date = datetime.now().strftime("%m月%d日")
+            
+            articles.append({"title": title, "link": link, "date": date, "source": source_name})
+        
+        return articles
+    except Exception as e:
+        print(f"获取AMiner新闻时出错: {e}")
+        return []
+
+def get_leiphone_news(url, source_name):
+    """获取雷锋网AI新闻"""
+    try:
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        articles = []
+        
+        news_items = soup.find_all("a", class_=["title", "article-title", "post-title"])
+        
+        for item in news_items:
+            title = item.get_text(strip=True)
+            if len(title) < 5:
+                continue
+                
+            link = item.get("href", "")
+            if link:
+                if not link.startswith("http"):
+                    if link.startswith("/"):
+                        link = "https://www.leiphone.com" + link
+                    else:
+                        link = "https://www.leiphone.com/" + link
+            
+            if not link:
+                continue
+            
+            # 筛选AI相关新闻
+            if not any(keyword in title.lower() for keyword in AI_KEYWORDS):
+                continue
+            
+            date = datetime.now().strftime("%m月%d日")
+            
+            articles.append({"title": title, "link": link, "date": date, "source": source_name})
+        
+        return articles
+    except Exception as e:
+        print(f"获取雷锋网新闻时出错: {e}")
+        return []
+
+def get_venturebeat_news(url, source_name):
+    """获取VentureBeat AI新闻"""
+    try:
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        articles = []
+        
+        news_items = soup.find_all("a", class_=["title", "article-title", "entry-title"])
+        
+        for item in news_items:
+            title = item.get_text(strip=True)
+            if len(title) < 5:
+                continue
+                
+            link = item.get("href", "")
+            if link and not link.startswith("http"):
+                if link.startswith("/"):
+                    link = "https://venturebeat.com" + link
+                else:
+                    link = "https://venturebeat.com/" + link
+            
+            if not link:
+                continue
+            
+            # 筛选AI相关新闻
+            if not any(keyword in title.lower() for keyword in AI_KEYWORDS):
+                continue
+            
+            date = datetime.now().strftime("%m月%d日")
+            
+            articles.append({"title": title, "link": link, "date": date, "source": source_name})
+        
+        return articles
+    except Exception as e:
+        print(f"获取VentureBeat新闻时出错: {e}")
+        return []
+
+def get_techcrunch_news(url, source_name):
+    """获取TechCrunch AI新闻"""
+    try:
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        articles = []
+        
+        news_items = soup.find_all("a", class_=["title", "article-title", "entry-title", "post-title"])
+        
+        for item in news_items:
+            title = item.get_text(strip=True)
+            if len(title) < 5:
+                continue
+                
+            link = item.get("href", "")
+            if link and not link.startswith("http"):
+                if link.startswith("/"):
+                    link = "https://techcrunch.com" + link
+                else:
+                    link = "https://techcrunch.com/" + link
+            
+            if not link:
+                continue
+            
+            # 筛选AI相关新闻
+            if not any(keyword in title.lower() for keyword in AI_KEYWORDS):
+                continue
+            
+            date = datetime.now().strftime("%m月%d日")
+            
+            articles.append({"title": title, "link": link, "date": date, "source": source_name})
+        
+        return articles
+    except Exception as e:
+        print(f"获取TechCrunch新闻时出错: {e}")
+        return []
+
+def get_generic_news(url, source_name):
+    """通用新闻获取方法"""
+    try:
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+        
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        driver.get(url)
+        
+        wait = WebDriverWait(driver, 10)
+        
+        page_source = driver.page_source
+        driver.quit()
+        
+        soup = BeautifulSoup(page_source, "html.parser")
+        articles = []
+        
+        news_items = soup.find_all("a", class_=["title", "article-title", "entry-title", "post-title"])
+        
+        for item in news_items:
+            title = item.get_text(strip=True)
+            if len(title) < 5:
+                continue
+                
+            link = item.get("href", "")
+            if not link:
+                continue
+            
+            date = datetime.now().strftime("%m月%d日")
+            
+            articles.append({"title": title, "link": link, "date": date, "source": source_name})
+        
+        return articles
+    except Exception as e:
+        print(f"获取通用新闻时出错: {e}")
+        return []
+
+def get_rss_news(url, source_name):
+    """获取RSS/ATOM新闻"""
+    try:
+        feed = feedparser.parse(url)
+        articles = []
+        
+        for entry in feed.entries:
+            title = entry.get('title', '')
+            if not title or len(title.strip()) < 5:
+                continue
+                
+            link = entry.get('link', '')
+            if not link:
+                continue
+            
+            # 筛选AI相关新闻
+            title_lower = title.lower()
+            ai_keywords = ["ai", "artificial intelligence", "machine learning", "deep learning", "neural", 
+                          "algorithm", "model", "chatgpt", "openai", "gpt", "transformer", "llm",
+                          "人工智能", "机器学习", "深度学习", "智能", "算法", "大模型"]
+            
+            if not any(keyword in title_lower for keyword in ai_keywords):
+                continue
+            
+            # 获取日期
+            date = datetime.now().strftime("%m月%d日")
+            if 'published' in entry:
+                try:
+                    pub_date = datetime.strptime(entry.published, '%a, %d %b %Y %H:%M:%S %z')
+                    date = pub_date.strftime("%m月%d日")
+                except:
+                    pass
+            
+            articles.append({
+                "title": title.strip(),
+                "link": link,
+                "date": date,
+                "source": source_name
+            })
+        
+        return articles
+    except Exception as e:
+        print(f"获取RSS新闻时出错: {e}")
+        return []
+
+def get_api_news(url, source_name):
+    """获取API新闻"""
+    try:
+        # 设置请求头
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "application/json"
+        }
+        
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        
+        data = response.json()
+        articles = []
+        
+        # 处理不同的API响应格式
+        if isinstance(data, dict):
+            # 尝试不同的API响应格式
+            articles_data = []
+            
+            # 格式1: {articles: [...]}
+            if 'articles' in data:
+                articles_data = data['articles']
+            # 格式2: {data: [...]}
+            elif 'data' in data and isinstance(data['data'], list):
+                articles_data = data['data']
+            # 格式3: {items: [...]}
+            elif 'items' in data:
+                articles_data = data['items']
+            # 格式4: {results: [...]}
+            elif 'results' in data:
+                articles_data = data['results']
+            # 格式5: {response: {docs: [...]}}
+            elif 'response' in data and isinstance(data['response'], dict) and 'docs' in data['response']:
+                articles_data = data['response']['docs']
+            
+            for item in articles_data:
+                if isinstance(item, dict):
+                    title = item.get('title', item.get('headline', item.get('name', '')))
+                    link = item.get('url', item.get('link', item.get('href', '')))
+                    
+                    if not title or len(title.strip()) < 5:
+                        continue
+                    
+                    if not link:
+                        continue
+                    
+                    # 筛选AI相关新闻
+                    title_lower = title.lower()
+                    ai_keywords = ["ai", "artificial intelligence", "machine learning", "deep learning", "neural", 
+                                  "algorithm", "model", "chatgpt", "openai", "gpt", "transformer", "llm",
+                                  "人工智能", "机器学习", "深度学习", "智能", "算法", "大模型"]
+                    
+                    if not any(keyword in title_lower for keyword in ai_keywords):
+                        continue
+                    
+                    # 获取日期
+                    date = datetime.now().strftime("%m月%d日")
+                    pub_date = item.get('publishedAt', item.get('published_date', item.get('date', '')))
+                    if pub_date:
+                        try:
+                            # 尝试解析不同的日期格式
+                            for date_format in ['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%d %H:%M:%S']:
+                                try:
+                                    pub_date_obj = datetime.strptime(pub_date, date_format)
+                                    date = pub_date_obj.strftime("%m月%d日")
+                                    break
+                                except:
+                                    continue
+                        except:
+                            pass
+                    
+                    articles.append({
+                        "title": title.strip(),
+                        "link": link,
+                        "date": date,
+                        "source": source_name
+                    })
+        
+        return articles
+    except Exception as e:
+        print(f"获取API新闻时出错: {e}")
+        return []
+
+def get_ai_news():
+    """从多个数据源获取AI新闻，按照优先级排序"""
+    all_articles = []
+    
+    # 从配置文件获取启用的数据源，并按优先级排序
+    enabled_sources = [source for source in NEWS_SOURCES if source.get("enabled", True)]
+    enabled_sources.sort(key=lambda x: x.get("priority", 3), reverse=True)
+    
+    # 从每个数据源获取新闻
+    for source in enabled_sources:
+        print(f"正在从 {source['name']} (优先级: {source.get('priority', 3)}) 获取新闻...")
+        articles = get_ai_news_from_source(source["url"], source["name"])
+        
+        # 为每篇文章添加优先级信息
+        priority = source.get("priority", 3)
+        for article in articles:
+            article["priority"] = priority
+        
+        # 限制每个源的文章数量
+        articles = articles[:MAX_ARTICLES_PER_SOURCE]
+        all_articles.extend(articles)
+    
+    # 去重 - 优先基于标题去重，避免重复内容
+    seen_titles = set()
+    unique_articles = []
+    for article in all_articles:
+        # 清理标题，去除多余空格和特殊字符
+        clean_title = article["title"].strip()
+        # 使用标题作为去重的主要依据
+        if clean_title not in seen_titles and len(clean_title) > 10:
+            seen_titles.add(clean_title)
+            unique_articles.append(article)
+    
+    # 按优先级排序文章
+    unique_articles.sort(key=lambda x: x.get("priority", 3), reverse=True)
+    
+    # 根据优先级限制文章数量
+    priority_articles = []
+    priority_counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+    
+    for article in unique_articles:
+        priority = article.get("priority", 3)
+        if priority_counts[priority] < MAX_ARTICLES_PER_PRIORITY.get(priority, 4):
+            priority_articles.append(article)
+            priority_counts[priority] += 1
+        
+        # 如果已经获取足够多的文章，提前退出
+        if len(priority_articles) >= MAX_TOTAL_ARTICLES:
+            break
+    
+    return priority_articles
 
 def summarize_news(news_list):
     """使用AI对新闻列表进行摘要"""
     try:
-        news_text = "\n".join([f'标题: {news["title"]} (日期: {news["date"]})' for news in news_list])
+        # 构建包含来源信息的新闻文本
+        news_items = []
+        for news in news_list:
+            if "source" in news:
+                news_items.append(f'标题: {news["title"]} (来源: {news["source"]}, 日期: {news["date"]})')
+            else:
+                news_items.append(f'标题: {news["title"]} (日期: {news["date"]})')
+        news_text = "\n".join(news_items)
         
         response = client.chat.completions.create(
             model="deepseek-chat",
@@ -306,11 +792,17 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
         
         # 添加新闻条目
         for i, news in enumerate(news_list[:10], 1):  # 限制最多显示10条新闻
+            # 构建新闻条目内容，包含来源信息（如果有）
+            if "source" in news:
+                news_content = f"{i}. [{news['title']}]({news['link']}) 来源: {news['source']} 日期: {news['date']}"
+            else:
+                news_content = f"{i}. [{news['title']}]({news['link']}) 日期: {news['date']}"
+                
             card_elements.append({
                 "tag": "div",
                 "text": {
                     "tag": "lark_md",
-                    "content": f"{i}. [{news['title']}]({news['link']}) 日期: {news['date']}"
+                    "content": news_content
                 }
             })
         
@@ -384,12 +876,9 @@ def main():
         print("无法获取access_token，退出任务。")
         return
 
-    # 新闻源URL
-    news_source_url = "https://www.jiqizhixin.com/"
-    
-    # 获取AI新闻
+    # 获取AI新闻（从多个数据源）
     print("正在获取AI新闻...")
-    ai_news = get_ai_news(news_source_url)
+    ai_news = get_ai_news()
     
     if ai_news:
         print(f"成功获取 {len(ai_news)} 条新闻")
