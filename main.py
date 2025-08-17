@@ -215,29 +215,44 @@ def summarize_news(news_list):
         return "无法生成摘要。"
 
 def send_to_feishu(webhook_url, summary, news_list, image_key=None):
-    """发送消息到飞书群聊，支持富文本和图片"""
+    """发送消息到飞书群聊，支持卡片消息格式"""
     try:
         headers = {
             "Content-Type": "application/json"
         }
         
-        # 构建富文本消息内容
-        post_content = []
-        
-        # 添加标题行
-        post_content.append([
-            {
-                "tag": "text",
-                "text": "📊 今日AI热点摘要:\n"
-            }
-        ])
-        
-        # 处理摘要内容，移除Markdown格式并转换为飞书富文本格式
-        # 移除标题标记和特殊符号
+        # 处理摘要内容，移除Markdown格式
         clean_summary = summary.replace('**', '')  # 移除所有粗体标记
         clean_summary = clean_summary.replace('### ', '')  # 移除标题标记
         clean_summary = clean_summary.replace('#### ', '')  # 移除子标题标记
         
+        # 构建卡片消息内容
+        card_elements = []
+        
+        # 添加标题
+        card_elements.append({
+            "tag": "div",
+            "text": {
+                "tag": "lark_md",
+                "content": "**🤖 AI日报 - {}**".format(datetime.now().strftime("%Y年%m月%d日"))
+            }
+        })
+        
+        # 添加分割线
+        card_elements.append({
+            "tag": "hr"
+        })
+        
+        # 添加摘要标题
+        card_elements.append({
+            "tag": "div",
+            "text": {
+                "tag": "lark_md",
+                "content": "**📊 今日AI热点摘要:**"
+            }
+        })
+        
+        # 添加摘要内容
         # 按段落分割
         summary_paragraphs = clean_summary.split('\n\n')
         for paragraph in summary_paragraphs:
@@ -252,101 +267,58 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
                 formatted_paragraph = '\n'.join(formatted_lines)
                 
                 # 为段落添加统一的格式处理
-                # 如果段落以数字开头，认为是小节标题
                 if formatted_paragraph.strip().startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
-                    # 提取标题内容并添加格式化标记
-                    title_content = formatted_paragraph.strip()
-                    formatted_paragraph = f"\n【{title_content}】"
-                # 如果段落较短且包含冒号，可能是小节标题
+                    # 数字开头的段落，认为是小节标题
+                    formatted_paragraph = f"**{formatted_paragraph.strip()}**"
                 elif len(formatted_paragraph.strip()) < 50 and ':' in formatted_paragraph:
-                    title_content = formatted_paragraph.strip()
-                    formatted_paragraph = f"\n【{title_content}】"
-                # 如果段落以"关键信息"、"核心趋势"等关键词开头，添加标记
+                    # 短段落且包含冒号，可能是小节标题
+                    formatted_paragraph = f"**{formatted_paragraph.strip()}**"
                 elif any(keyword in formatted_paragraph for keyword in ['关键信息', '核心趋势', '总结']):
-                    title_content = formatted_paragraph.strip()
-                    formatted_paragraph = f"【{title_content}】"
+                    # 包含关键词的段落，添加粗体
+                    formatted_paragraph = f"**{formatted_paragraph.strip()}**"
                 
-                # 处理列表项格式，添加适当的缩进
-                final_lines = []
-                paragraph_lines = formatted_paragraph.split('\n')
-                for line in paragraph_lines:
-                    if line.strip().startswith(('-', '1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
-                        # 为列表项添加缩进
-                        final_lines.append('  ' + line.strip())
-                    else:
-                        final_lines.append(line)
-                
-                formatted_paragraph = '\n'.join(final_lines)
-                
-                post_content.append([
-                    {
-                        "tag": "text",
-                        "text": formatted_paragraph + "\n\n"
+                card_elements.append({
+                    "tag": "div",
+                    "text": {
+                        "tag": "lark_md",
+                        "content": formatted_paragraph
                     }
-                ])
+                })
+        
+        # 添加分割线
+        card_elements.append({
+            "tag": "hr"
+        })
         
         # 添加新闻列表标题
-        post_content.append([
-            {
-                "tag": "text",
-                "text": "📰 详细新闻列表:\n"
+        card_elements.append({
+            "tag": "div",
+            "text": {
+                "tag": "lark_md",
+                "content": "**📰 详细新闻列表:**"
             }
-        ])
+        })
         
-        # 添加新闻条目，每个条目作为独立的富文本元素
-        for i, news in enumerate(news_list, 1):
-            # 添加新闻序号和标题（作为超链接）
-            post_content.append([
-                {
-                    "tag": "text",
-                    "text": f"{i}. "
-                },
-                {
-                    "tag": "a",
-                    "text": news["title"],
-                    "href": news["link"]
-                },
-                {
-                    "tag": "text",
-                    "text": f" (日期: {news['date']})\n"
+        # 添加新闻条目
+        for i, news in enumerate(news_list[:10], 1):  # 限制最多显示10条新闻
+            card_elements.append({
+                "tag": "div",
+                "text": {
+                    "tag": "lark_md",
+                    "content": f"{i}. [{news['title']}]({news['link']})\n日期: {news['date']}"
                 }
-            ])
+            })
         
-        if image_key:
-            # 构建富文本消息，包含图片
-            data = {
-                "msg_type": "post",
-                "content": {
-                    "post": {
-                        "zh_cn": {
-                            "title": "🤖 AI日报 - {}".format(datetime.now().strftime("%Y年%m月%d日")),
-                            "content": [
-                                [
-                                    {
-                                        "tag": "img",
-                                        "image_key": image_key,
-                                        "width": 600,
-                                        "height": 300
-                                    }
-                                ]
-                            ] + post_content
-                        }
-                    }
-                }
+        # 构建卡片消息
+        data = {
+            "msg_type": "interactive",
+            "card": {
+                "config": {
+                    "wide_screen_mode": True
+                },
+                "elements": card_elements
             }
-        else:
-            # 仅发送文本消息，使用post格式以支持更好的显示效果
-            data = {
-                "msg_type": "post",
-                "content": {
-                    "post": {
-                        "zh_cn": {
-                            "title": "🤖 AI日报 - {}".format(datetime.now().strftime("%Y年%m月%d日")),
-                            "content": post_content
-                        }
-                    }
-                }
-            }
+        }
             
         response = requests.post(webhook_url, headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
         response.raise_for_status()
