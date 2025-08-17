@@ -45,3 +45,37 @@ AI_KEYWORDS = [
 REQUEST_TIMEOUT = 30  # 请求超时时间（秒）
 RETRY_COUNT = 3      # 重试次数
 RETRY_DELAY = 2      # 重试间隔（秒）
+
+# 定时任务配置已移除，使用系统cron或systemd timer进行定时任务管理
+
+# 大模型供应商配置
+MODEL_PROVIDERS = {
+    "deepseek": {
+        "name": "DeepSeek",
+        "api_key": "sk-e9c92f4884e742c1a533d17c1ab729d0",
+        "base_url": "https://api.deepseek.com/",
+        "model": "deepseek-chat",
+        "max_tokens": 8192,
+        "enabled": True
+    },
+    "glm": {
+        "name": "GLM",
+        "api_key": "12075de027a14d3e86492f7420461b7d.JlrZgEuclZ0w91qA",
+        "base_url": "https://open.bigmodel.cn/api/paas/v4",
+        "model": "glm-4.5",
+        "max_tokens": 50000,
+        "enabled": True
+    }
+}
+
+# 当前使用的模型供应商
+CURRENT_PROVIDER = "deepseek"  # 可选值: "deepseek", "kimi", "glm"
+
+# 日志配置
+LOG_CONFIG = {
+    "level": "INFO",  # 日志级别: DEBUG, INFO, WARNING, ERROR
+    "file": "ai_daily_robot.log",  # 日志文件路径
+    "max_size": 10485760,  # 日志文件最大大小（10MB）
+    "backup_count": 5,  # 保留的日志文件数量
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s",  # 日志格式
+}

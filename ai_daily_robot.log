@@ -1,0 +1,1239 @@
+2025-08-17 22:28:19,297 - __main__ - INFO - setup_logging:1166 - 日志系统初始化完成
+2025-08-17 22:28:19,297 - __main__ - INFO - main:1179 - ============================================================
+2025-08-17 22:28:19,297 - __main__ - INFO - main:1180 - [START] 开始执行AI日报任务 - 2025-08-17 22:28:19
+2025-08-17 22:28:19,297 - __main__ - INFO - main:1181 - ============================================================
+2025-08-17 22:28:19,297 - __main__ - INFO - main:1182 - 日志级别: INFO
+2025-08-17 22:28:19,297 - __main__ - INFO - main:1183 - 日志文件: ai_daily_robot.log
+2025-08-17 22:28:19,297 - __main__ - INFO - main:1193 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:28:19,297 - __main__ - INFO - main:1199 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:28:19,298 - __main__ - INFO - main:1202 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:28:19,451 - __main__ - INFO - get_tenant_access_token:79 - 成功获取tenant_access_token
+2025-08-17 22:28:19,452 - __main__ - INFO - main:1207 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:28:19,452 - __main__ - INFO - main:1210 - [INFO] 开始获取AI新闻...
+2025-08-17 22:28:19,453 - __main__ - INFO - get_ai_news:731 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:28:19,453 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 36氪 获取新闻...
+2025-08-17 22:28:20,349 - __main__ - INFO - get_ai_news:731 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:28:20,349 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 机器之心 获取新闻...
+2025-08-17 22:28:20,349 - __main__ - ERROR - get_jiqizhixin_news:238 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:28:20,349 - __main__ - INFO - get_ai_news:731 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:28:20,349 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 AMiner 获取新闻...
+2025-08-17 22:28:20,397 - __main__ - INFO - get_ai_news:731 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:28:20,397 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:28:21,033 - __main__ - INFO - get_ai_news:731 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:28:21,033 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:28:21,627 - __main__ - INFO - get_ai_news:731 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:28:21,627 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:28:22,427 - __main__ - INFO - get_ai_news:731 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:28:22,427 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:28:22,500 - __main__ - INFO - get_ai_news:731 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:28:22,500 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:28:24,077 - __main__ - INFO - get_ai_news:731 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:28:24,077 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:28:24,504 - __main__ - INFO - get_ai_news:731 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:28:24,504 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:28:45,105 - __main__ - INFO - get_ai_news:731 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:28:45,107 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:28:46,265 - __main__ - INFO - main:1214 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:28:46,265 - __main__ - INFO - main:1217 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:28:46,641 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-08-17 22:29:18,385 - __main__ - ERROR - main:1249 - [ERROR] 主函数执行出错: name 'logger' is not defined
+2025-08-17 22:29:18,387 - __main__ - ERROR - main:1251 - [ERROR] 详细错误信息:
+Traceback (most recent call last):
+  File "/Users/yangwei/Desktop/post/ai_daily_robot/main.py", line 792, in summarize_news
+    if logger:
+       ^^^^^^
+NameError: name 'logger' is not defined
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/yangwei/Desktop/post/ai_daily_robot/main.py", line 1218, in main
+    summary = summarize_news(ai_news)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yangwei/Desktop/post/ai_daily_robot/main.py", line 796, in summarize_news
+    if logger:
+       ^^^^^^
+NameError: name 'logger' is not defined
+
+2025-08-17 22:29:18,388 - __main__ - INFO - main:1265 - ============================================================
+2025-08-17 22:29:18,388 - __main__ - INFO - main:1266 - [END] AI日报任务完成 - 2025-08-17 22:29:18
+2025-08-17 22:29:18,388 - __main__ - INFO - main:1267 - 总执行时间: 0:00:59.091336
+2025-08-17 22:29:18,390 - __main__ - INFO - main:1268 - ============================================================
+2025-08-17 22:30:11,038 - __main__ - INFO - setup_logging:1166 - 日志系统初始化完成
+2025-08-17 22:30:11,039 - __main__ - INFO - main:1179 - ============================================================
+2025-08-17 22:30:11,039 - __main__ - INFO - main:1180 - [START] 开始执行AI日报任务 - 2025-08-17 22:30:11
+2025-08-17 22:30:11,039 - __main__ - INFO - main:1181 - ============================================================
+2025-08-17 22:30:11,039 - __main__ - INFO - main:1182 - 日志级别: INFO
+2025-08-17 22:30:11,039 - __main__ - INFO - main:1183 - 日志文件: ai_daily_robot.log
+2025-08-17 22:30:11,039 - __main__ - INFO - main:1193 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:30:11,039 - __main__ - INFO - main:1199 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:30:11,039 - __main__ - INFO - main:1202 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:30:11,169 - __main__ - INFO - get_tenant_access_token:79 - 成功获取tenant_access_token
+2025-08-17 22:30:11,170 - __main__ - INFO - main:1207 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:30:11,170 - __main__ - INFO - main:1210 - [INFO] 开始获取AI新闻...
+2025-08-17 22:30:11,170 - __main__ - INFO - get_ai_news:731 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:30:11,170 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 36氪 获取新闻...
+2025-08-17 22:30:11,789 - __main__ - INFO - get_ai_news:731 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:30:11,789 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 机器之心 获取新闻...
+2025-08-17 22:30:11,789 - __main__ - ERROR - get_jiqizhixin_news:238 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:30:11,789 - __main__ - INFO - get_ai_news:731 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:30:11,789 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 AMiner 获取新闻...
+2025-08-17 22:30:11,844 - __main__ - INFO - get_ai_news:731 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:30:11,844 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:30:12,225 - __main__ - INFO - get_ai_news:731 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:30:12,225 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:30:12,899 - __main__ - INFO - get_ai_news:731 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:30:12,899 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:30:13,408 - __main__ - INFO - get_ai_news:731 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:30:13,408 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:30:13,581 - __main__ - INFO - get_ai_news:731 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:30:13,581 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:30:15,021 - __main__ - INFO - get_ai_news:731 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:30:15,021 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:30:15,653 - __main__ - INFO - get_ai_news:731 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:30:15,653 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:30:35,937 - __main__ - INFO - get_ai_news:731 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:30:35,937 - __main__ - INFO - get_ai_news_from_source:92 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:30:37,942 - __main__ - INFO - main:1214 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:30:37,943 - __main__ - INFO - main:1217 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:30:38,325 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-08-17 22:31:11,275 - __main__ - INFO - main:1220 - [SUCCESS] 生成的日报摘要:
+2025-08-17 22:31:11,276 - __main__ - INFO - main:1221 - ----------------------------------------
+2025-08-17 22:31:11,276 - __main__ - INFO - main:1222 - ### **关键信息与趋势总结**  
+
+#### **1. AI行业应用与商业化加速**  
+- **AI百业大会**（2025 AI Partner 百业大会）聚焦“中国式方案”，推动AI技术与各行业深度融合，报名已启动（36氪）。  
+- **医疗AI突破**：睿心医疗发布全自动AI血管介入手术机器人，标志精准医疗进入“全自动”时代（36氪）。  
+- **新能源与AI结合**：智能水翼艇研发团队获李泽湘天使轮融资，显示AI+新能源在水上出行领域的应用潜力（36氪）。  
+
+#### **2. 生成式AI与多模态模型竞争升级**  
+- **谷歌Genie 3**被内部称为“Sora后最强AI爆款”，可能推动世界模型（World Model）技术发展（36氪）。  
+- **GPT-5已发布**（Gartner），但支持真正自主智能体（Agentic AI）的基础设施尚未成熟（VentureBeat）。  
+
+#### **3. 开源模型与成本问题引发讨论**  
+- 开源模型（如gpt-oss-20b）被改造为“非推理基座模型”，减少对齐以增强自由度，但可能牺牲可靠性（VentureBeat）。  
+- **开源模型的隐性成本**：部分“廉价”开源模型实际计算资源消耗高昂，需谨慎选择（VentureBeat）。  
+
+#### **4. AI投资与回报受关注**  
+- 邓紫棋投资AI公司3年获利10倍，反映AI领域的高回报潜力（36氪）。  
+
+#### **5. 技术优化方向：反馈循环与持续学习**  
+- **LLM反馈循环设计**：通过持续反馈机制提升模型智能水平（VentureBeat），强调动态学习的重要性。  
+
+### **核心趋势**  
+1. **垂直行业渗透**：AI加速落地医疗、交通、能源等领域，中国方案强调本土化应用。  
+2. **生成式AI竞赛**：世界模型、多模态技术（如视频生成）成为巨头争夺焦点。  
+3. **开源与成本平衡**：开源模型自由度提升，但需权衡计算成本与实用性。  
+4. **AI基础设施滞后**：尽管大模型迭代迅速（如GPT-5），支撑Agentic AI的底层技术仍需突破。  
+5. **投资热潮持续**：明星跨界投资案例凸显AI商业化价值。  
+
+（注：趋势分析基于中英文报道交叉验证，侧重技术落地、资本动向及行业瓶颈。）
+2025-08-17 22:31:11,277 - __main__ - INFO - main:1223 - ----------------------------------------
+2025-08-17 22:31:11,303 - __main__ - WARNING - main:1233 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 22:31:11,303 - __main__ - INFO - main:1236 - [INFO] 正在发送消息到飞书...
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1004 - 
+==================================================
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1005 - 当前Webhook配置状态:
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1006 - ==================================================
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1012 - 📌 主群聊: ✅ 启用
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1013 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1014 -    图片: ✅ 发送
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1015 - ------------------------------
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1012 - 📌 测试群聊: ❌ 禁用
+2025-08-17 22:31:11,303 - __main__ - INFO - print_webhook_configs:1013 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 22:31:11,311 - __main__ - INFO - print_webhook_configs:1014 -    图片: ❌ 不发送
+2025-08-17 22:31:11,311 - __main__ - INFO - print_webhook_configs:1015 - ------------------------------
+2025-08-17 22:31:11,311 - __main__ - INFO - print_webhook_configs:1012 - 📌 备份群聊: ❌ 禁用
+2025-08-17 22:31:11,311 - __main__ - INFO - print_webhook_configs:1013 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 22:31:11,311 - __main__ - INFO - print_webhook_configs:1014 -    图片: ❌ 不发送
+2025-08-17 22:31:11,311 - __main__ - INFO - print_webhook_configs:1015 - ------------------------------
+2025-08-17 22:31:11,311 - __main__ - INFO - print_webhook_configs:1019 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 22:31:11,311 - __main__ - INFO - print_webhook_configs:1020 - ==================================================
+
+2025-08-17 22:31:11,311 - __main__ - INFO - send_to_multiple_webhooks:1058 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 22:31:11,766 - __main__ - ERROR - send_to_multiple_webhooks:1107 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 22:31:11,767 - __main__ - INFO - send_to_multiple_webhooks:1113 - 
+==================================================
+2025-08-17 22:31:11,767 - __main__ - INFO - send_to_multiple_webhooks:1114 - 📊 发送结果统计:
+2025-08-17 22:31:11,767 - __main__ - INFO - send_to_multiple_webhooks:1115 - ==================================================
+2025-08-17 22:31:11,767 - __main__ - INFO - send_to_multiple_webhooks:1116 - ✅ 成功: 0
+2025-08-17 22:31:11,767 - __main__ - INFO - send_to_multiple_webhooks:1117 - ❌ 失败: 1
+2025-08-17 22:31:11,767 - __main__ - INFO - send_to_multiple_webhooks:1118 - 📈 总计: 1
+2025-08-17 22:31:11,768 - __main__ - WARNING - send_to_multiple_webhooks:1129 - 
+❌ 失败详情:
+2025-08-17 22:31:11,768 - __main__ - WARNING - send_to_multiple_webhooks:1132 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 22:31:11,768 - __main__ - INFO - send_to_multiple_webhooks:1140 - ==================================================
+
+2025-08-17 22:31:11,768 - __main__ - WARNING - main:1243 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 22:31:11,768 - __main__ - INFO - main:1265 - ============================================================
+2025-08-17 22:31:11,768 - __main__ - INFO - main:1266 - [END] AI日报任务完成 - 2025-08-17 22:31:11
+2025-08-17 22:31:11,769 - __main__ - INFO - main:1267 - 总执行时间: 0:01:00.729779
+2025-08-17 22:31:11,769 - __main__ - INFO - main:1268 - ============================================================
+2025-08-17 22:36:43,454 - __main__ - INFO - setup_logging:1261 - 日志系统初始化完成
+2025-08-17 22:36:43,454 - __main__ - INFO - main:1274 - ============================================================
+2025-08-17 22:36:43,454 - __main__ - INFO - main:1275 - [START] 开始执行AI日报任务 - 2025-08-17 22:36:43
+2025-08-17 22:36:43,454 - __main__ - INFO - main:1276 - ============================================================
+2025-08-17 22:36:43,454 - __main__ - INFO - main:1277 - 日志级别: INFO
+2025-08-17 22:36:43,454 - __main__ - INFO - main:1278 - 日志文件: ai_daily_robot.log
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1066 - 
+==================================================
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1067 - 当前模型供应商配置状态:
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1068 - ==================================================
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1073 - 🤖 DeepSeek (deepseek): ✅ 启用 
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1074 -    模型: deepseek-chat
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1075 -    最大Token: 50000
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1076 - ------------------------------
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1073 - 🤖 GLM (glm): ✅ 启用 👉 当前使用
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1074 -    模型: glm-4.5
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1075 -    最大Token: 50000
+2025-08-17 22:36:43,454 - __main__ - INFO - print_model_provider_configs:1076 - ------------------------------
+2025-08-17 22:36:43,455 - __main__ - INFO - print_model_provider_configs:1078 - 📊 当前使用: GLM
+2025-08-17 22:36:43,455 - __main__ - INFO - print_model_provider_configs:1079 - ==================================================
+
+2025-08-17 22:36:43,455 - __main__ - INFO - main:1291 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:36:43,455 - __main__ - INFO - main:1297 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:36:43,455 - __main__ - INFO - main:1300 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:36:43,671 - __main__ - INFO - get_tenant_access_token:127 - 成功获取tenant_access_token
+2025-08-17 22:36:43,673 - __main__ - INFO - main:1305 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:36:43,673 - __main__ - INFO - main:1308 - [INFO] 开始获取AI新闻...
+2025-08-17 22:36:43,673 - __main__ - INFO - get_ai_news:779 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:36:43,673 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 36氪 获取新闻...
+2025-08-17 22:36:44,261 - __main__ - INFO - get_ai_news:779 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:36:44,261 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 机器之心 获取新闻...
+2025-08-17 22:36:44,262 - __main__ - ERROR - get_jiqizhixin_news:286 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:36:44,262 - __main__ - INFO - get_ai_news:779 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:36:44,262 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 AMiner 获取新闻...
+2025-08-17 22:36:44,327 - __main__ - INFO - get_ai_news:779 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:36:44,327 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:36:44,768 - __main__ - INFO - get_ai_news:779 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:36:44,768 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:36:45,290 - __main__ - INFO - get_ai_news:779 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:36:45,290 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:36:45,963 - __main__ - INFO - get_ai_news:779 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:36:45,963 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:36:46,046 - __main__ - INFO - get_ai_news:779 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:36:46,046 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:36:47,173 - __main__ - INFO - get_ai_news:779 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:36:47,173 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:36:47,595 - __main__ - INFO - get_ai_news:779 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:36:47,595 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:37:08,437 - __main__ - INFO - get_ai_news:779 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:37:08,438 - __main__ - INFO - get_ai_news_from_source:140 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:37:11,076 - __main__ - INFO - main:1312 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:37:11,076 - __main__ - INFO - main:1315 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:37:11,076 - __main__ - ERROR - get_model_client:66 - 不支持的模型供应商: glm
+2025-08-17 22:37:11,076 - __main__ - ERROR - summarize_news:828 - 无法获取模型客户端
+2025-08-17 22:37:11,077 - __main__ - INFO - main:1318 - [SUCCESS] 生成的日报摘要:
+2025-08-17 22:37:11,077 - __main__ - INFO - main:1319 - ----------------------------------------
+2025-08-17 22:37:11,077 - __main__ - INFO - main:1320 - 无法生成摘要：模型客户端初始化失败
+2025-08-17 22:37:11,077 - __main__ - INFO - main:1321 - ----------------------------------------
+2025-08-17 22:37:11,099 - __main__ - WARNING - main:1331 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 22:37:11,099 - __main__ - INFO - main:1334 - [INFO] 正在发送消息到飞书...
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1099 - 
+==================================================
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1100 - 当前Webhook配置状态:
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1101 - ==================================================
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1107 - 📌 主群聊: ✅ 启用
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1108 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1109 -    图片: ✅ 发送
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1110 - ------------------------------
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1107 - 📌 测试群聊: ❌ 禁用
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1108 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1109 -    图片: ❌ 不发送
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1110 - ------------------------------
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1107 - 📌 备份群聊: ❌ 禁用
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1108 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1109 -    图片: ❌ 不发送
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1110 - ------------------------------
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1114 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 22:37:11,099 - __main__ - INFO - print_webhook_configs:1115 - ==================================================
+
+2025-08-17 22:37:11,099 - __main__ - INFO - send_to_multiple_webhooks:1153 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 22:37:11,457 - __main__ - ERROR - send_to_multiple_webhooks:1202 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 22:37:11,457 - __main__ - INFO - send_to_multiple_webhooks:1208 - 
+==================================================
+2025-08-17 22:37:11,457 - __main__ - INFO - send_to_multiple_webhooks:1209 - 📊 发送结果统计:
+2025-08-17 22:37:11,457 - __main__ - INFO - send_to_multiple_webhooks:1210 - ==================================================
+2025-08-17 22:37:11,457 - __main__ - INFO - send_to_multiple_webhooks:1211 - ✅ 成功: 0
+2025-08-17 22:37:11,457 - __main__ - INFO - send_to_multiple_webhooks:1212 - ❌ 失败: 1
+2025-08-17 22:37:11,457 - __main__ - INFO - send_to_multiple_webhooks:1213 - 📈 总计: 1
+2025-08-17 22:37:11,457 - __main__ - WARNING - send_to_multiple_webhooks:1224 - 
+❌ 失败详情:
+2025-08-17 22:37:11,458 - __main__ - WARNING - send_to_multiple_webhooks:1227 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 22:37:11,458 - __main__ - INFO - send_to_multiple_webhooks:1235 - ==================================================
+
+2025-08-17 22:37:11,458 - __main__ - WARNING - main:1341 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 22:37:11,458 - __main__ - INFO - main:1363 - ============================================================
+2025-08-17 22:37:11,458 - __main__ - INFO - main:1364 - [END] AI日报任务完成 - 2025-08-17 22:37:11
+2025-08-17 22:37:11,458 - __main__ - INFO - main:1365 - 总执行时间: 0:00:28.003753
+2025-08-17 22:37:11,458 - __main__ - INFO - main:1366 - ============================================================
+2025-08-17 22:38:39,269 - __main__ - INFO - setup_logging:1266 - 日志系统初始化完成
+2025-08-17 22:38:39,270 - __main__ - INFO - main:1279 - ============================================================
+2025-08-17 22:38:39,270 - __main__ - INFO - main:1280 - [START] 开始执行AI日报任务 - 2025-08-17 22:38:39
+2025-08-17 22:38:39,270 - __main__ - INFO - main:1281 - ============================================================
+2025-08-17 22:38:39,270 - __main__ - INFO - main:1282 - 日志级别: INFO
+2025-08-17 22:38:39,270 - __main__ - INFO - main:1283 - 日志文件: ai_daily_robot.log
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 👉 当前使用
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: GLM
+2025-08-17 22:38:39,270 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 22:38:39,270 - __main__ - INFO - main:1296 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:38:39,270 - __main__ - INFO - main:1302 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:38:39,270 - __main__ - INFO - main:1305 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:38:39,469 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 22:38:39,470 - __main__ - INFO - main:1310 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:38:39,470 - __main__ - INFO - main:1313 - [INFO] 开始获取AI新闻...
+2025-08-17 22:38:39,470 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:38:39,470 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 22:38:40,046 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:38:40,046 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 22:38:40,046 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:38:40,046 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:38:40,046 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 22:38:40,100 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:38:40,100 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:38:40,794 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:38:40,794 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:38:41,399 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:38:41,399 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:38:41,905 - __main__ - INFO - get_ai_news:784 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:38:41,905 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:38:41,986 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:38:41,986 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:38:43,386 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:38:43,386 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:38:43,920 - __main__ - INFO - get_ai_news:784 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:38:43,920 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:39:04,649 - __main__ - INFO - get_ai_news:784 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:39:04,651 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:39:05,579 - __main__ - INFO - main:1317 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:39:05,579 - __main__ - INFO - main:1320 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:39:05,691 - __main__ - INFO - get_model_client:77 - 已初始化 GLM 客户端
+2025-08-17 22:39:05,910 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions/chat/completions "HTTP/1.1 404 Not Found"
+2025-08-17 22:39:05,910 - __main__ - ERROR - summarize_news:864 - 生成摘要时出错: Error code: 404 - {'timestamp': '2025-08-17T14:39:05.961+00:00', 'status': 404, 'error': 'Not Found', 'path': '/v4/chat/completions/chat/completions'}
+2025-08-17 22:39:05,910 - __main__ - INFO - main:1323 - [SUCCESS] 生成的日报摘要:
+2025-08-17 22:39:05,910 - __main__ - INFO - main:1324 - ----------------------------------------
+2025-08-17 22:39:05,910 - __main__ - INFO - main:1325 - 无法生成摘要。
+2025-08-17 22:39:05,910 - __main__ - INFO - main:1326 - ----------------------------------------
+2025-08-17 22:39:05,932 - __main__ - WARNING - main:1336 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 22:39:05,933 - __main__ - INFO - main:1339 - [INFO] 正在发送消息到飞书...
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1104 - 
+==================================================
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1105 - 当前Webhook配置状态:
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1106 - ==================================================
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1112 - 📌 主群聊: ✅ 启用
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1114 -    图片: ✅ 发送
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1112 - 📌 测试群聊: ❌ 禁用
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1112 - 📌 备份群聊: ❌ 禁用
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1119 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 22:39:05,933 - __main__ - INFO - print_webhook_configs:1120 - ==================================================
+
+2025-08-17 22:39:05,933 - __main__ - INFO - send_to_multiple_webhooks:1158 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 22:39:06,294 - __main__ - ERROR - send_to_multiple_webhooks:1207 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 22:39:06,295 - __main__ - INFO - send_to_multiple_webhooks:1213 - 
+==================================================
+2025-08-17 22:39:06,295 - __main__ - INFO - send_to_multiple_webhooks:1214 - 📊 发送结果统计:
+2025-08-17 22:39:06,295 - __main__ - INFO - send_to_multiple_webhooks:1215 - ==================================================
+2025-08-17 22:39:06,295 - __main__ - INFO - send_to_multiple_webhooks:1216 - ✅ 成功: 0
+2025-08-17 22:39:06,296 - __main__ - INFO - send_to_multiple_webhooks:1217 - ❌ 失败: 1
+2025-08-17 22:39:06,296 - __main__ - INFO - send_to_multiple_webhooks:1218 - 📈 总计: 1
+2025-08-17 22:39:06,296 - __main__ - WARNING - send_to_multiple_webhooks:1229 - 
+❌ 失败详情:
+2025-08-17 22:39:06,296 - __main__ - WARNING - send_to_multiple_webhooks:1232 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 22:39:06,296 - __main__ - INFO - send_to_multiple_webhooks:1240 - ==================================================
+
+2025-08-17 22:39:06,296 - __main__ - WARNING - main:1346 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 22:39:06,296 - __main__ - INFO - main:1368 - ============================================================
+2025-08-17 22:39:06,296 - __main__ - INFO - main:1369 - [END] AI日报任务完成 - 2025-08-17 22:39:06
+2025-08-17 22:39:06,296 - __main__ - INFO - main:1370 - 总执行时间: 0:00:27.026686
+2025-08-17 22:39:06,296 - __main__ - INFO - main:1371 - ============================================================
+2025-08-17 22:40:09,660 - __main__ - INFO - setup_logging:1266 - 日志系统初始化完成
+2025-08-17 22:40:09,660 - __main__ - INFO - main:1279 - ============================================================
+2025-08-17 22:40:09,660 - __main__ - INFO - main:1280 - [START] 开始执行AI日报任务 - 2025-08-17 22:40:09
+2025-08-17 22:40:09,660 - __main__ - INFO - main:1281 - ============================================================
+2025-08-17 22:40:09,660 - __main__ - INFO - main:1282 - 日志级别: INFO
+2025-08-17 22:40:09,660 - __main__ - INFO - main:1283 - 日志文件: ai_daily_robot.log
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 👉 当前使用
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: GLM
+2025-08-17 22:40:09,660 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 22:40:09,660 - __main__ - INFO - main:1296 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:40:09,660 - __main__ - INFO - main:1302 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:40:09,660 - __main__ - INFO - main:1305 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:40:09,781 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 22:40:09,782 - __main__ - INFO - main:1310 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:40:09,782 - __main__ - INFO - main:1313 - [INFO] 开始获取AI新闻...
+2025-08-17 22:40:09,782 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:40:09,782 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 22:40:10,284 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:40:10,285 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 22:40:10,285 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:40:10,285 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:40:10,285 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 22:40:10,449 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:40:10,449 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:40:11,007 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:40:11,007 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:40:12,082 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:40:12,082 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:40:14,064 - __main__ - INFO - get_ai_news:784 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:40:14,064 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:40:14,208 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:40:14,208 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:40:20,024 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:40:20,024 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:40:24,975 - __main__ - INFO - get_ai_news:784 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:40:24,975 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:40:45,321 - __main__ - INFO - get_ai_news:784 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:40:45,322 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:40:53,417 - __main__ - INFO - main:1317 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:40:53,417 - __main__ - INFO - main:1320 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:40:53,554 - __main__ - INFO - get_model_client:77 - 已初始化 GLM 客户端
+2025-08-17 22:41:25,967 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2025-08-17 22:41:25,989 - __main__ - INFO - main:1323 - [SUCCESS] 生成的日报摘要:
+2025-08-17 22:41:25,989 - __main__ - INFO - main:1324 - ----------------------------------------
+2025-08-17 22:41:25,989 - __main__ - INFO - main:1325 - 以下是对所提供AI新闻的关键信息提取与趋势总结，按主题分类呈现：
+
+---
+
+### **一、核心事件与产品发布**
+1. **2025 AI Partner百业大会（中国）**  
+   - **关键信息**：36氪连续报道大会，主题聚焦“中国式方案”，强调AI赋能百业（制造业、医疗、交通等）。  
+   - **趋势**：中国加速推动AI技术落地传统行业，探索本土化解决方案。
+
+2. **睿心医疗全自动AI血管介入手术机器人**  
+   - **关键信息**：发布全球首款全自动AI血管介入手术机器人，实现精准手术操作，标志医疗AI进入“全自动智能时代”。  
+   - **趋势**：AI在医疗领域从辅助诊断向**自动化手术**升级，提升精准度与效率。
+
+3. **谷歌Genie 3世界模型**  
+   - **关键信息**：被称“Sora后最强AI爆款”，基于生成式AI构建动态世界模型，推动虚拟环境交互与模拟。  
+   - **趋势**：**世界模型（World Models）**成为新热点，AI从内容生成向理解物理规律演进。
+
+---
+
+### **二、技术突破与研发方向**
+1. **AI赋能“脑眼手”系统**  
+   - **关键信息**：研发突破人类极限的智能系统，整合感知（眼）、决策（脑）、执行（手），应用于工业机器人、自动驾驶等场景。  
+   - **趋势**：多模态AI系统向**全栈智能化**发展，逼近人类综合能力。
+
+2. **LLM反馈循环优化**  
+   - **关键信息**：VentureBeat探讨设计持续学习的LLM反馈机制，使模型通过用户交互迭代进化。  
+   - **趋势**：大模型从静态训练转向**动态学习**，强调实时适应性与自主进化。
+
+3. **开源模型成本陷阱**  
+   - **关键信息**：开源AI模型（如gpt-oss-20b）实际算力消耗远超预期，部署成本高昂。  
+   - **趋势**：行业反思开源模型的经济性，**算力成本**成为商业化核心瓶颈。
+
+---
+
+### **三、产业投资与商业化**
+1. **智能水翼艇融资（新能源+AI）**  
+   - **关键信息**：研发团队获李泽湘天使轮融资，将AI应用于新能源水上出行，优化能效与自动驾驶。  
+   - **趋势**：**AI+新能源**跨界融合加速，绿色智能交通成新风口。
+
+2. **邓紫棋投资AI公司3年赚10倍**  
+   - **关键信息**：明星资本布局AI赛道，高回报案例吸引更多跨界投资。  
+   - **趋势**：AI投资热度持续，**商业化落地能力**成估值关键。
+
+---
+
+### **四、行业挑战与前瞻**
+1. **Gartner：GPT-5与智能体AI基础设施错位**  
+   - **关键信息**：GPT-5等大模型已发布，但支持**智能体AI（Agentic AI）**的算力、安全框架尚未成熟。  
+   - **趋势**：技术迭代快于基础设施，**智能体AI**的规模化落地需解决算力、伦理、可靠性问题。
+
+2. **开源模型“去对齐化”争议**  
+   - **关键信息**：研究者将OpenAI开源模型改造为“非推理基座模型”，减少安全限制以提升自由度。  
+   - **趋势**：开源社区与商业公司在**模型安全性**与**灵活性**间博弈，监管挑战凸显。
+
+---
+
+### **五大核心趋势总结**
+| **趋势领域**       | **具体表现**                                                                 |
+|---------------------|-----------------------------------------------------------------------------|
+| **1. 垂直行业深化** | 医疗（手术机器人）、交通（智能水翼艇）、制造业（百业大会）成为AI落地主战场。 |
+| **2. 技术范式升级** | 世界模型（Genie 3）、全栈智能系统（脑眼手）、动态学习LLM推动AI能力边界。     |
+| **3. 基础设施瓶颈** | 算力成本、智能体AI支撑体系滞后于模型发展，成为规模化障碍。                 |
+| **4. 资本跨界涌入** | 明星资本、产业基金（如李泽湘）加注AI，商业化案例（邓紫棋投资）刺激市场。    |
+| **5. 安全与效率博弈** | 开源模型成本陷阱、去对齐化争议，凸显技术自由与风险控制的平衡难题。         |
+
+---
+
+### **关键结论**
+- **中国AI路径**：以“百业大会”为代表，强调**产业融合**与**本土化方案**，医疗、新能源等领域领跑。  
+- **全球技术焦点**：从生成式AI（Sora）向**世界模型**、**智能体AI**演进，但基础设施亟待突破。  
+- **商业化核心矛盾**：算力成本高企与开源模型经济性受质疑，倒逼行业优化技术路径与商业模式。  
+- **未来竞争点**：**全栈智能系统**（脑眼手协同）与**动态学习机制**（LLM反馈循环）或成下一阶段胜负手。
+2025-08-17 22:41:25,991 - __main__ - INFO - main:1326 - ----------------------------------------
+2025-08-17 22:41:26,028 - __main__ - WARNING - main:1336 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 22:41:26,028 - __main__ - INFO - main:1339 - [INFO] 正在发送消息到飞书...
+2025-08-17 22:41:26,028 - __main__ - INFO - print_webhook_configs:1104 - 
+==================================================
+2025-08-17 22:41:26,028 - __main__ - INFO - print_webhook_configs:1105 - 当前Webhook配置状态:
+2025-08-17 22:41:26,028 - __main__ - INFO - print_webhook_configs:1106 - ==================================================
+2025-08-17 22:41:26,028 - __main__ - INFO - print_webhook_configs:1112 - 📌 主群聊: ✅ 启用
+2025-08-17 22:41:26,028 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 22:41:26,028 - __main__ - INFO - print_webhook_configs:1114 -    图片: ✅ 发送
+2025-08-17 22:41:26,028 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:41:26,028 - __main__ - INFO - print_webhook_configs:1112 - 📌 测试群聊: ❌ 禁用
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1112 - 📌 备份群聊: ❌ 禁用
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1119 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 22:41:26,029 - __main__ - INFO - print_webhook_configs:1120 - ==================================================
+
+2025-08-17 22:41:26,029 - __main__ - INFO - send_to_multiple_webhooks:1158 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 22:41:26,468 - __main__ - ERROR - send_to_multiple_webhooks:1207 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 22:41:26,469 - __main__ - INFO - send_to_multiple_webhooks:1213 - 
+==================================================
+2025-08-17 22:41:26,469 - __main__ - INFO - send_to_multiple_webhooks:1214 - 📊 发送结果统计:
+2025-08-17 22:41:26,470 - __main__ - INFO - send_to_multiple_webhooks:1215 - ==================================================
+2025-08-17 22:41:26,470 - __main__ - INFO - send_to_multiple_webhooks:1216 - ✅ 成功: 0
+2025-08-17 22:41:26,470 - __main__ - INFO - send_to_multiple_webhooks:1217 - ❌ 失败: 1
+2025-08-17 22:41:26,470 - __main__ - INFO - send_to_multiple_webhooks:1218 - 📈 总计: 1
+2025-08-17 22:41:26,470 - __main__ - WARNING - send_to_multiple_webhooks:1229 - 
+❌ 失败详情:
+2025-08-17 22:41:26,470 - __main__ - WARNING - send_to_multiple_webhooks:1232 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 22:41:26,470 - __main__ - INFO - send_to_multiple_webhooks:1240 - ==================================================
+
+2025-08-17 22:41:26,470 - __main__ - WARNING - main:1346 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 22:41:26,470 - __main__ - INFO - main:1368 - ============================================================
+2025-08-17 22:41:26,470 - __main__ - INFO - main:1369 - [END] AI日报任务完成 - 2025-08-17 22:41:26
+2025-08-17 22:41:26,470 - __main__ - INFO - main:1370 - 总执行时间: 0:01:16.810158
+2025-08-17 22:41:26,470 - __main__ - INFO - main:1371 - ============================================================
+2025-08-17 22:42:09,650 - __main__ - INFO - setup_logging:1266 - 日志系统初始化完成
+2025-08-17 22:42:09,650 - __main__ - INFO - main:1279 - ============================================================
+2025-08-17 22:42:09,650 - __main__ - INFO - main:1280 - [START] 开始执行AI日报任务 - 2025-08-17 22:42:09
+2025-08-17 22:42:09,650 - __main__ - INFO - main:1281 - ============================================================
+2025-08-17 22:42:09,650 - __main__ - INFO - main:1282 - 日志级别: INFO
+2025-08-17 22:42:09,650 - __main__ - INFO - main:1283 - 日志文件: ai_daily_robot.log
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 👉 当前使用
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: DeepSeek
+2025-08-17 22:42:09,650 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 22:42:09,650 - __main__ - INFO - main:1296 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:42:09,650 - __main__ - INFO - main:1302 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:42:09,650 - __main__ - INFO - main:1305 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:42:09,851 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 22:42:09,852 - __main__ - INFO - main:1310 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:42:09,852 - __main__ - INFO - main:1313 - [INFO] 开始获取AI新闻...
+2025-08-17 22:42:09,852 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:42:09,852 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 22:42:10,659 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:42:10,659 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 22:42:10,660 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:42:10,660 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:42:10,660 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 22:42:10,799 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:42:10,799 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:42:11,175 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:42:11,175 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:42:17,794 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:42:17,794 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:42:25,265 - __main__ - INFO - get_ai_news:784 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:42:25,265 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:42:25,360 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:42:25,360 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:42:28,637 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:42:28,637 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:42:31,090 - __main__ - INFO - get_ai_news:784 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:42:31,090 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:42:51,365 - __main__ - INFO - get_ai_news:784 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:42:51,366 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:42:54,445 - __main__ - INFO - main:1317 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:42:54,445 - __main__ - INFO - main:1320 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:42:54,559 - __main__ - INFO - get_model_client:77 - 已初始化 DeepSeek 客户端
+2025-08-17 22:42:54,928 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 400 Bad Request"
+2025-08-17 22:42:54,932 - __main__ - ERROR - summarize_news:864 - 生成摘要时出错: Error code: 400 - {'error': {'message': 'Invalid max_tokens value, the valid range of max_tokens is [1, 8192]', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_request_error'}}
+2025-08-17 22:42:54,932 - __main__ - INFO - main:1323 - [SUCCESS] 生成的日报摘要:
+2025-08-17 22:42:54,932 - __main__ - INFO - main:1324 - ----------------------------------------
+2025-08-17 22:42:54,932 - __main__ - INFO - main:1325 - 无法生成摘要。
+2025-08-17 22:42:54,933 - __main__ - INFO - main:1326 - ----------------------------------------
+2025-08-17 22:42:54,962 - __main__ - WARNING - main:1336 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 22:42:54,962 - __main__ - INFO - main:1339 - [INFO] 正在发送消息到飞书...
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1104 - 
+==================================================
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1105 - 当前Webhook配置状态:
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1106 - ==================================================
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1112 - 📌 主群聊: ✅ 启用
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1114 -    图片: ✅ 发送
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1112 - 📌 测试群聊: ❌ 禁用
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1112 - 📌 备份群聊: ❌ 禁用
+2025-08-17 22:42:54,962 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 22:42:54,963 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:42:54,963 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:42:54,963 - __main__ - INFO - print_webhook_configs:1119 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 22:42:54,963 - __main__ - INFO - print_webhook_configs:1120 - ==================================================
+
+2025-08-17 22:42:54,963 - __main__ - INFO - send_to_multiple_webhooks:1158 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 22:42:55,346 - __main__ - ERROR - send_to_multiple_webhooks:1207 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 22:42:55,347 - __main__ - INFO - send_to_multiple_webhooks:1213 - 
+==================================================
+2025-08-17 22:42:55,347 - __main__ - INFO - send_to_multiple_webhooks:1214 - 📊 发送结果统计:
+2025-08-17 22:42:55,347 - __main__ - INFO - send_to_multiple_webhooks:1215 - ==================================================
+2025-08-17 22:42:55,347 - __main__ - INFO - send_to_multiple_webhooks:1216 - ✅ 成功: 0
+2025-08-17 22:42:55,348 - __main__ - INFO - send_to_multiple_webhooks:1217 - ❌ 失败: 1
+2025-08-17 22:42:55,348 - __main__ - INFO - send_to_multiple_webhooks:1218 - 📈 总计: 1
+2025-08-17 22:42:55,348 - __main__ - WARNING - send_to_multiple_webhooks:1229 - 
+❌ 失败详情:
+2025-08-17 22:42:55,348 - __main__ - WARNING - send_to_multiple_webhooks:1232 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 22:42:55,348 - __main__ - INFO - send_to_multiple_webhooks:1240 - ==================================================
+
+2025-08-17 22:42:55,348 - __main__ - WARNING - main:1346 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 22:42:55,348 - __main__ - INFO - main:1368 - ============================================================
+2025-08-17 22:42:55,348 - __main__ - INFO - main:1369 - [END] AI日报任务完成 - 2025-08-17 22:42:55
+2025-08-17 22:42:55,348 - __main__ - INFO - main:1370 - 总执行时间: 0:00:45.698203
+2025-08-17 22:42:55,348 - __main__ - INFO - main:1371 - ============================================================
+2025-08-17 22:45:19,970 - __main__ - INFO - setup_logging:1268 - 日志系统初始化完成
+2025-08-17 22:45:19,970 - __main__ - INFO - main:1281 - ============================================================
+2025-08-17 22:45:19,970 - __main__ - INFO - main:1282 - [START] 开始执行AI日报任务 - 2025-08-17 22:45:19
+2025-08-17 22:45:19,970 - __main__ - INFO - main:1283 - ============================================================
+2025-08-17 22:45:19,970 - __main__ - INFO - main:1284 - 日志级别: INFO
+2025-08-17 22:45:19,970 - __main__ - INFO - main:1285 - 日志文件: ai_daily_robot.log
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 👉 当前使用
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 8192
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: DeepSeek
+2025-08-17 22:45:19,970 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 22:45:19,970 - __main__ - INFO - main:1298 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:45:19,970 - __main__ - INFO - main:1304 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:45:19,970 - __main__ - INFO - main:1307 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:45:20,201 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 22:45:20,203 - __main__ - INFO - main:1312 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:45:20,203 - __main__ - INFO - main:1315 - [INFO] 开始获取AI新闻...
+2025-08-17 22:45:20,203 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:45:20,203 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 22:45:21,979 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:45:21,979 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 22:45:21,979 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:45:21,979 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:45:21,979 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 22:45:22,154 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:45:22,154 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:45:22,770 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:45:22,770 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:45:27,738 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:45:27,738 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:45:32,800 - __main__ - INFO - get_ai_news:784 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:45:32,800 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:45:32,874 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:45:32,874 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:45:36,614 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:45:36,614 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:45:38,289 - __main__ - INFO - get_ai_news:784 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:45:38,289 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:45:58,567 - __main__ - INFO - get_ai_news:784 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:45:58,568 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:45:59,436 - __main__ - INFO - main:1319 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:45:59,436 - __main__ - INFO - main:1322 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:45:59,548 - __main__ - INFO - get_model_client:77 - 已初始化 DeepSeek 客户端
+2025-08-17 22:45:59,964 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-08-17 22:46:33,467 - __main__ - INFO - main:1325 - [SUCCESS] 生成的日报摘要:
+2025-08-17 22:46:33,468 - __main__ - INFO - main:1326 - ----------------------------------------
+2025-08-17 22:46:33,468 - __main__ - INFO - main:1327 - ### **关键信息与趋势总结**  
+
+#### **1. AI行业应用与产业融合加速**  
+- **2025 AI Partner 百业大会**（36氪）：中国推动AI与传统行业结合的“中国式方案”，强调AI在百业中的落地应用。  
+- **睿心医疗AI血管介入手术机器人**（36氪）：医疗领域AI技术突破，全自动化手术或成未来趋势。  
+- **智能水翼艇获融资**（36氪）：新能源与AI结合，水上出行领域成为新风口。  
+
+#### **2. 生成式AI与底层技术突破**  
+- **谷歌Genie 3**（36氪）：被称为“Sora后最强AI爆款”，可能推动世界模型（World Model）发展。  
+- **GPT-5发布但基础设施不足**（VentureBeat）：Gartner指出，尽管大模型迭代迅速（如GPT-5），但支持智能体（Agentic AI）的底层架构尚未成熟。  
+
+#### **3. 开源模型与成本争议**  
+- **开源模型计算成本高**（VentureBeat）：部分“廉价”开源模型实际消耗大量算力资源，需优化效率。  
+- **非对齐性基座模型实验**（VentureBeat）：研究者尝试将GPT-OSS-20B改为更自由、低对齐的基座模型，探索技术边界。  
+
+#### **4. AI投资与商业化潜力**  
+- **邓紫棋投资AI公司3年赚10倍**（36氪）：明星跨界投资AI成功案例，反映AI领域的高回报潜力。  
+- **LLM反馈循环设计**（VentureBeat）：通过持续反馈优化模型智能，长期学习能力成研究重点。  
+
+### **核心趋势**  
+1. **垂直行业渗透**：AI加速与医疗、交通、能源等传统行业结合，中国方案强调本土化落地。  
+2. **生成式AI竞争**：世界模型、多模态技术（如Genie 3、Sora）推动新一轮应用创新。  
+3. **算力与成本矛盾**：大模型发展受限于基础设施，开源模型需平衡性能与效率。  
+4. **投资热度持续**：AI商业化案例（如医疗机器人、新能源）吸引资本，明星入局凸显市场信心。  
+5. **技术伦理与对齐**：部分研究探索非对齐模型，引发对AI自由度与安全性的讨论。  
+
+**总结**：AI技术向产业纵深发展，生成式AI竞争白热化，但算力瓶颈和伦理问题仍需解决；投资与商业化案例验证长期价值。
+2025-08-17 22:46:33,469 - __main__ - INFO - main:1328 - ----------------------------------------
+2025-08-17 22:46:33,494 - __main__ - WARNING - main:1338 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 22:46:33,494 - __main__ - INFO - main:1341 - [INFO] 正在发送消息到飞书...
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1104 - 
+==================================================
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1105 - 当前Webhook配置状态:
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1106 - ==================================================
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1112 - 📌 主群聊: ✅ 启用
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1114 -    图片: ✅ 发送
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1112 - 📌 测试群聊: ❌ 禁用
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1112 - 📌 备份群聊: ❌ 禁用
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:46:33,494 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:46:33,495 - __main__ - INFO - print_webhook_configs:1119 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 22:46:33,495 - __main__ - INFO - print_webhook_configs:1120 - ==================================================
+
+2025-08-17 22:46:33,495 - __main__ - INFO - send_to_multiple_webhooks:1158 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 22:46:33,979 - __main__ - ERROR - send_to_multiple_webhooks:1207 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 22:46:33,979 - __main__ - INFO - send_to_multiple_webhooks:1213 - 
+==================================================
+2025-08-17 22:46:33,979 - __main__ - INFO - send_to_multiple_webhooks:1214 - 📊 发送结果统计:
+2025-08-17 22:46:33,979 - __main__ - INFO - send_to_multiple_webhooks:1215 - ==================================================
+2025-08-17 22:46:33,979 - __main__ - INFO - send_to_multiple_webhooks:1216 - ✅ 成功: 0
+2025-08-17 22:46:33,979 - __main__ - INFO - send_to_multiple_webhooks:1217 - ❌ 失败: 1
+2025-08-17 22:46:33,979 - __main__ - INFO - send_to_multiple_webhooks:1218 - 📈 总计: 1
+2025-08-17 22:46:33,979 - __main__ - WARNING - send_to_multiple_webhooks:1229 - 
+❌ 失败详情:
+2025-08-17 22:46:33,979 - __main__ - WARNING - send_to_multiple_webhooks:1233 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 22:46:33,979 - __main__ - INFO - send_to_multiple_webhooks:1242 - ==================================================
+
+2025-08-17 22:46:33,980 - __main__ - WARNING - main:1348 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 22:46:33,980 - __main__ - INFO - main:1370 - ============================================================
+2025-08-17 22:46:33,980 - __main__ - INFO - main:1371 - [END] AI日报任务完成 - 2025-08-17 22:46:33
+2025-08-17 22:46:33,980 - __main__ - INFO - main:1372 - 总执行时间: 0:01:14.010105
+2025-08-17 22:46:33,980 - __main__ - INFO - main:1373 - ============================================================
+2025-08-17 22:47:51,714 - __main__ - INFO - setup_logging:1285 - 日志系统初始化完成
+2025-08-17 22:47:51,714 - __main__ - INFO - main:1298 - ============================================================
+2025-08-17 22:47:51,714 - __main__ - INFO - main:1299 - [START] 开始执行AI日报任务 - 2025-08-17 22:47:51
+2025-08-17 22:47:51,714 - __main__ - INFO - main:1300 - ============================================================
+2025-08-17 22:47:51,714 - __main__ - INFO - main:1301 - 日志级别: INFO
+2025-08-17 22:47:51,714 - __main__ - INFO - main:1302 - 日志文件: ai_daily_robot.log
+2025-08-17 22:47:51,714 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 22:47:51,714 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 22:47:51,714 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 22:47:51,714 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 👉 当前使用
+2025-08-17 22:47:51,714 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 22:47:51,714 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 8192
+2025-08-17 22:47:51,714 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:47:51,715 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 
+2025-08-17 22:47:51,715 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 22:47:51,715 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:47:51,715 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:47:51,715 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: DeepSeek
+2025-08-17 22:47:51,715 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 22:47:51,715 - __main__ - INFO - main:1315 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:47:51,715 - __main__ - INFO - main:1321 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:47:51,715 - __main__ - INFO - main:1324 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:47:51,838 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 22:47:51,839 - __main__ - INFO - main:1329 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:47:51,839 - __main__ - INFO - main:1332 - [INFO] 开始获取AI新闻...
+2025-08-17 22:47:51,839 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:47:51,839 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 22:47:53,417 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:47:53,417 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 22:47:53,418 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:47:53,418 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:47:53,418 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 22:47:53,487 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:47:53,487 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:47:53,833 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:47:53,833 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:48:05,480 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:48:05,480 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:48:12,057 - __main__ - INFO - get_ai_news:784 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:48:12,057 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:48:12,160 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:48:12,160 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:48:22,870 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:48:22,870 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:48:28,118 - __main__ - INFO - get_ai_news:784 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:48:28,119 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:48:51,339 - __main__ - INFO - get_ai_news:784 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:48:51,341 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:48:56,664 - __main__ - INFO - main:1336 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:48:56,664 - __main__ - INFO - main:1339 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:48:56,806 - __main__ - INFO - get_model_client:77 - 已初始化 DeepSeek 客户端
+2025-08-17 22:48:57,208 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-08-17 22:49:28,201 - __main__ - INFO - main:1342 - [SUCCESS] 生成的日报摘要:
+2025-08-17 22:49:28,201 - __main__ - INFO - main:1343 - ----------------------------------------
+2025-08-17 22:49:28,202 - __main__ - INFO - main:1344 - ### **关键信息与趋势总结**  
+
+#### **1. AI行业应用与商业化加速**  
+- **中国AI落地方案**：36氪连续报道“2025 AI Partner 百业大会”，强调AI在多个行业的应用（“中国式方案”），显示国内AI技术向产业落地的趋势。  
+- **医疗AI突破**：睿心医疗发布全自动AI血管介入手术机器人，标志医疗领域进入“全自动”精准介入时代。  
+- **新能源与AI结合**：智能水翼艇研发团队获李泽湘天使轮融资，反映AI+新能源在水上出行领域的潜力。  
+
+#### **2. 大模型与生成式AI竞争升级**  
+- **世界模型技术突破**：谷歌内部揭秘Genie 3，被称为“Sora后最强AI爆款”，可能推动多模态生成与交互技术发展。  
+- **GPT-5与基础设施挑战**：Gartner指出GPT-5已出现，但支持“真正自主AI”的基础设施尚未成熟，凸显算力与架构瓶颈。  
+
+#### **3. 开源模型与成本问题**  
+- **开源模型争议**：VentureBeat报道显示，开源模型（如gpt-oss-20b）虽降低门槛，但可能因低效计算消耗更多预算，需权衡“自由度”与成本。  
+- **反馈循环优化**：研究关注通过设计LLM反馈循环（如持续学习机制）提升模型长期智能。  
+
+#### **4. AI投资与明星效应**  
+- **跨界投资成功案例**：邓紫棋投资AI公司3年赚10倍，反映AI领域的高回报潜力及名人资本涌入。  
+
+### **核心趋势**  
+1. **垂直行业渗透**：AI加速与医疗、交通、能源等传统行业融合，推动“全自动”解决方案。  
+2. **大模型技术竞赛**：世界模型、多模态生成（如Genie 3、Sora）成为巨头竞争焦点。  
+3. **算力与成本矛盾**：尽管开源模型普及，高效计算和基础设施仍是规模化落地的关键挑战。  
+4. **投资热度持续**：技术突破吸引资本，明星参与进一步推高市场关注度。  
+
+（注：中英文报道差异显示，国内侧重产业落地，海外更关注技术底层与开源生态问题。）
+2025-08-17 22:49:28,202 - __main__ - INFO - main:1345 - ----------------------------------------
+2025-08-17 22:49:28,230 - __main__ - WARNING - main:1355 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 22:49:28,230 - __main__ - INFO - main:1358 - [INFO] 正在发送消息到飞书...
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1104 - 
+==================================================
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1105 - 当前Webhook配置状态:
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1106 - ==================================================
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1112 - 📌 主群聊: ✅ 启用
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1114 -    图片: ✅ 发送
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1112 - 📌 测试群聊: ❌ 禁用
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:49:28,230 - __main__ - INFO - print_webhook_configs:1112 - 📌 备份群聊: ❌ 禁用
+2025-08-17 22:49:28,231 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 22:49:28,231 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:49:28,231 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:49:28,231 - __main__ - INFO - print_webhook_configs:1119 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 22:49:28,231 - __main__ - INFO - print_webhook_configs:1120 - ==================================================
+
+2025-08-17 22:49:28,231 - __main__ - INFO - send_to_multiple_webhooks:1158 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 22:49:28,630 - __main__ - ERROR - send_to_multiple_webhooks:1224 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 22:49:28,630 - __main__ - INFO - send_to_multiple_webhooks:1230 - 
+==================================================
+2025-08-17 22:49:28,630 - __main__ - INFO - send_to_multiple_webhooks:1231 - 📊 发送结果统计:
+2025-08-17 22:49:28,631 - __main__ - INFO - send_to_multiple_webhooks:1232 - ==================================================
+2025-08-17 22:49:28,631 - __main__ - INFO - send_to_multiple_webhooks:1233 - ✅ 成功: 0
+2025-08-17 22:49:28,631 - __main__ - INFO - send_to_multiple_webhooks:1234 - ❌ 失败: 1
+2025-08-17 22:49:28,631 - __main__ - INFO - send_to_multiple_webhooks:1235 - 📈 总计: 1
+2025-08-17 22:49:28,631 - __main__ - WARNING - send_to_multiple_webhooks:1246 - 
+❌ 失败详情:
+2025-08-17 22:49:28,631 - __main__ - WARNING - send_to_multiple_webhooks:1250 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 22:49:28,631 - __main__ - INFO - send_to_multiple_webhooks:1259 - ==================================================
+
+2025-08-17 22:49:28,631 - __main__ - WARNING - main:1365 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 22:49:28,631 - __main__ - INFO - main:1387 - ============================================================
+2025-08-17 22:49:28,631 - __main__ - INFO - main:1388 - [END] AI日报任务完成 - 2025-08-17 22:49:28
+2025-08-17 22:49:28,631 - __main__ - INFO - main:1389 - 总执行时间: 0:01:36.917254
+2025-08-17 22:49:28,631 - __main__ - INFO - main:1390 - ============================================================
+2025-08-17 22:54:29,684 - __main__ - INFO - setup_logging:1284 - 日志系统初始化完成
+2025-08-17 22:54:29,684 - __main__ - INFO - main:1297 - ============================================================
+2025-08-17 22:54:29,685 - __main__ - INFO - main:1298 - [START] 开始执行AI日报任务 - 2025-08-17 22:54:29
+2025-08-17 22:54:29,685 - __main__ - INFO - main:1299 - ============================================================
+2025-08-17 22:54:29,685 - __main__ - INFO - main:1300 - 日志级别: INFO
+2025-08-17 22:54:29,685 - __main__ - INFO - main:1301 - 日志文件: ai_daily_robot.log
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 👉 当前使用
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 8192
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: DeepSeek
+2025-08-17 22:54:29,685 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 22:54:29,685 - __main__ - INFO - main:1314 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:54:29,685 - __main__ - INFO - main:1320 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:54:29,685 - __main__ - INFO - main:1323 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:54:29,862 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 22:54:29,863 - __main__ - INFO - main:1328 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:54:29,863 - __main__ - INFO - main:1331 - [INFO] 开始获取AI新闻...
+2025-08-17 22:54:29,863 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:54:29,863 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 22:54:30,633 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:54:30,633 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 22:54:30,633 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:54:30,633 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:54:30,633 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 22:54:30,695 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:54:30,695 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:54:32,167 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 22:54:32,167 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat 获取新闻...
+2025-08-17 22:54:32,680 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 22:54:32,680 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch 获取新闻...
+2025-08-17 22:54:34,609 - __main__ - INFO - get_ai_news:784 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 22:54:34,609 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 InfoQ 获取新闻...
+2025-08-17 22:54:34,816 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 22:54:34,816 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 22:54:36,215 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 22:54:36,215 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 22:54:37,698 - __main__ - INFO - get_ai_news:784 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:54:37,698 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AI News RSS 获取新闻...
+2025-08-17 22:54:58,002 - __main__ - INFO - get_ai_news:784 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 22:54:58,003 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 22:54:59,175 - __main__ - INFO - main:1335 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 22:54:59,176 - __main__ - INFO - main:1338 - [INFO] 正在生成新闻摘要...
+2025-08-17 22:54:59,284 - __main__ - INFO - get_model_client:77 - 已初始化 DeepSeek 客户端
+2025-08-17 22:54:59,656 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-08-17 22:55:33,705 - __main__ - INFO - main:1341 - [SUCCESS] 生成的日报摘要:
+2025-08-17 22:55:33,706 - __main__ - INFO - main:1342 - ----------------------------------------
+2025-08-17 22:55:33,706 - __main__ - INFO - main:1343 - ### **关键信息与趋势总结**  
+
+#### **1. AI行业应用与产业融合加速**  
+- **AI Partner百业大会**：中国AI产业正推动“中国式方案”，强调AI与各行业的深度融合（如医疗、交通、金融等），预计2025年形成规模化落地。  
+- **医疗AI突破**：睿心医疗发布全自动AI血管介入手术机器人，标志AI在精准医疗领域进入“全自动”时代。  
+- **新能源+AI结合**：智能水翼艇获李泽湘天使轮融资，反映新能源与AI技术在水上出行领域的应用趋势。  
+
+#### **2. 生成式AI与底层技术迭代**  
+- **世界模型竞争**：谷歌Genie 3被称为“Sora后最强AI爆款”，预示多模态生成AI向更复杂的虚拟世界构建方向发展。  
+- **GPT-5与基础设施瓶颈**：Gartner指出，尽管GPT-5已出现，但支持“真代理AI”（agentic AI）的底层算力与架构仍需突破。  
+
+#### **3. 开源模型与成本争议**  
+- **开源模型风险**：部分“低成本”开源AI模型实际消耗大量算力资源，企业需权衡效率与成本。  
+- **模型自由度实验**：研究者尝试降低GPT-OSS-20B的“对齐”限制，探索更自由的基座模型，反映对AI可控性与创造性的平衡需求。  
+
+#### **4. 投资与商业化热潮**  
+- **明星跨界投资**：邓紫棋投资AI公司3年获利10倍，凸显AI领域的高回报潜力，吸引非科技资本入场。  
+- **反馈循环设计**：企业关注如何通过LLM（大语言模型）的持续反馈机制提升模型智能，推动长期学习能力。  
+
+### **核心趋势**  
+1. **垂直行业渗透**：AI从技术探索转向医疗、交通等实体产业落地，中国方案强调本地化场景适配。  
+2. **生成式AI进阶**：世界模型、多模态生成技术竞争白热化，但基础设施（如算力）仍是关键瓶颈。  
+3. **开源与成本博弈**：开源模型普及伴随隐性成本问题，行业需优化资源分配与模型效率。  
+4. **投资多元化**：AI商业化成功案例吸引跨界资本，加速技术变现与生态扩张。  
+
+（注：趋势分析基于中英文信源对比，显示全球AI发展共性——技术迭代与产业融合，差异点在于中国更侧重“百业”场景，而欧美关注底层架构与开源生态。）
+2025-08-17 22:55:33,707 - __main__ - INFO - main:1344 - ----------------------------------------
+2025-08-17 22:55:33,737 - __main__ - WARNING - main:1354 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 22:55:33,737 - __main__ - INFO - main:1357 - [INFO] 正在发送消息到飞书...
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1104 - 
+==================================================
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1105 - 当前Webhook配置状态:
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1106 - ==================================================
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1112 - 📌 主群聊: ✅ 启用
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1114 -    图片: ✅ 发送
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1112 - 📌 测试群聊: ❌ 禁用
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1112 - 📌 备份群聊: ❌ 禁用
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 22:55:33,737 - __main__ - INFO - print_webhook_configs:1119 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 22:55:33,738 - __main__ - INFO - print_webhook_configs:1120 - ==================================================
+
+2025-08-17 22:55:33,738 - __main__ - INFO - send_to_multiple_webhooks:1158 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 22:55:34,177 - __main__ - ERROR - send_to_multiple_webhooks:1223 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 22:55:34,178 - __main__ - INFO - send_to_multiple_webhooks:1229 - 
+==================================================
+2025-08-17 22:55:34,178 - __main__ - INFO - send_to_multiple_webhooks:1230 - 📊 发送结果统计:
+2025-08-17 22:55:34,178 - __main__ - INFO - send_to_multiple_webhooks:1231 - ==================================================
+2025-08-17 22:55:34,178 - __main__ - INFO - send_to_multiple_webhooks:1232 - ✅ 成功: 0
+2025-08-17 22:55:34,178 - __main__ - INFO - send_to_multiple_webhooks:1233 - ❌ 失败: 1
+2025-08-17 22:55:34,179 - __main__ - INFO - send_to_multiple_webhooks:1234 - 📈 总计: 1
+2025-08-17 22:55:34,179 - __main__ - WARNING - send_to_multiple_webhooks:1245 - 
+❌ 失败详情:
+2025-08-17 22:55:34,179 - __main__ - WARNING - send_to_multiple_webhooks:1249 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 22:55:34,179 - __main__ - INFO - send_to_multiple_webhooks:1258 - ==================================================
+
+2025-08-17 22:55:34,179 - __main__ - WARNING - main:1364 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 22:55:34,179 - __main__ - INFO - main:1386 - ============================================================
+2025-08-17 22:55:34,179 - __main__ - INFO - main:1387 - [END] AI日报任务完成 - 2025-08-17 22:55:34
+2025-08-17 22:55:34,179 - __main__ - INFO - main:1388 - 总执行时间: 0:01:04.494949
+2025-08-17 22:55:34,179 - __main__ - INFO - main:1389 - ============================================================
+2025-08-17 22:58:54,607 - __main__ - INFO - setup_logging:1284 - 日志系统初始化完成
+2025-08-17 22:58:54,608 - __main__ - INFO - main:1297 - ============================================================
+2025-08-17 22:58:54,608 - __main__ - INFO - main:1298 - [START] 开始执行AI日报任务 - 2025-08-17 22:58:54
+2025-08-17 22:58:54,608 - __main__ - INFO - main:1299 - ============================================================
+2025-08-17 22:58:54,608 - __main__ - INFO - main:1300 - 日志级别: INFO
+2025-08-17 22:58:54,608 - __main__ - INFO - main:1301 - 日志文件: ai_daily_robot.log
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 👉 当前使用
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 8192
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: DeepSeek
+2025-08-17 22:58:54,608 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 22:58:54,608 - __main__ - INFO - main:1314 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 22:58:54,608 - __main__ - INFO - main:1320 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 22:58:54,608 - __main__ - INFO - main:1323 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 22:58:54,797 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 22:58:54,799 - __main__ - INFO - main:1328 - [SUCCESS] 成功获取访问令牌
+2025-08-17 22:58:54,799 - __main__ - INFO - main:1331 - [INFO] 开始获取AI新闻...
+2025-08-17 22:58:54,799 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 22:58:54,799 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 22:58:55,475 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 22:58:55,475 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 22:58:55,475 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 22:58:55,475 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 22:58:55,475 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 22:58:55,530 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 22:58:55,530 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 22:58:55,802 - __main__ - INFO - main:1386 - ============================================================
+2025-08-17 22:58:55,802 - __main__ - INFO - main:1387 - [END] AI日报任务完成 - 2025-08-17 22:58:55
+2025-08-17 22:58:55,802 - __main__ - INFO - main:1388 - 总执行时间: 0:00:01.194408
+2025-08-17 22:58:55,802 - __main__ - INFO - main:1389 - ============================================================
+2025-08-17 23:00:53,409 - __main__ - INFO - setup_logging:1284 - 日志系统初始化完成
+2025-08-17 23:00:53,409 - __main__ - INFO - main:1297 - ============================================================
+2025-08-17 23:00:53,409 - __main__ - INFO - main:1298 - [START] 开始执行AI日报任务 - 2025-08-17 23:00:53
+2025-08-17 23:00:53,409 - __main__ - INFO - main:1299 - ============================================================
+2025-08-17 23:00:53,409 - __main__ - INFO - main:1300 - 日志级别: INFO
+2025-08-17 23:00:53,409 - __main__ - INFO - main:1301 - 日志文件: ai_daily_robot.log
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 👉 当前使用
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 8192
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: DeepSeek
+2025-08-17 23:00:53,409 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 23:00:53,409 - __main__ - INFO - main:1314 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 23:00:53,409 - __main__ - INFO - main:1320 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 23:00:53,409 - __main__ - INFO - main:1323 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 23:00:53,811 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 23:00:53,814 - __main__ - INFO - main:1328 - [SUCCESS] 成功获取访问令牌
+2025-08-17 23:00:53,814 - __main__ - INFO - main:1331 - [INFO] 开始获取AI新闻...
+2025-08-17 23:00:53,814 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 23:00:53,814 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 23:00:54,605 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 23:00:54,605 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 23:00:54,605 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 23:00:54,605 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 23:00:54,605 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 23:00:54,932 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 23:00:54,932 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 23:00:55,465 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 23:00:55,465 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat 获取新闻...
+2025-08-17 23:00:56,005 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 23:00:56,005 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch 获取新闻...
+2025-08-17 23:00:56,523 - __main__ - INFO - get_ai_news:784 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 23:00:56,523 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 InfoQ 获取新闻...
+2025-08-17 23:00:56,591 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 23:00:56,591 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 23:00:57,750 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 23:00:57,750 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 23:00:59,281 - __main__ - INFO - get_ai_news:784 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 23:00:59,281 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AI News RSS 获取新闻...
+2025-08-17 23:01:19,632 - __main__ - INFO - get_ai_news:784 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 23:01:19,633 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 23:01:21,516 - __main__ - INFO - main:1335 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 23:01:21,516 - __main__ - INFO - main:1338 - [INFO] 正在生成新闻摘要...
+2025-08-17 23:01:21,624 - __main__ - INFO - get_model_client:77 - 已初始化 DeepSeek 客户端
+2025-08-17 23:01:22,000 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-08-17 23:01:44,675 - __main__ - INFO - main:1386 - ============================================================
+2025-08-17 23:01:44,676 - __main__ - INFO - main:1387 - [END] AI日报任务完成 - 2025-08-17 23:01:44
+2025-08-17 23:01:44,676 - __main__ - INFO - main:1388 - 总执行时间: 0:00:51.265967
+2025-08-17 23:01:44,676 - __main__ - INFO - main:1389 - ============================================================
+2025-08-17 23:01:57,600 - __main__ - INFO - setup_logging:1284 - 日志系统初始化完成
+2025-08-17 23:01:57,600 - __main__ - INFO - main:1297 - ============================================================
+2025-08-17 23:01:57,600 - __main__ - INFO - main:1298 - [START] 开始执行AI日报任务 - 2025-08-17 23:01:57
+2025-08-17 23:01:57,600 - __main__ - INFO - main:1299 - ============================================================
+2025-08-17 23:01:57,600 - __main__ - INFO - main:1300 - 日志级别: INFO
+2025-08-17 23:01:57,600 - __main__ - INFO - main:1301 - 日志文件: ai_daily_robot.log
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1071 - 
+==================================================
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1072 - 当前模型供应商配置状态:
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1073 - ==================================================
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 DeepSeek (deepseek): ✅ 启用 👉 当前使用
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1079 -    模型: deepseek-chat
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 8192
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1078 - 🤖 GLM (glm): ✅ 启用 
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1079 -    模型: glm-4.5
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1080 -    最大Token: 50000
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1081 - ------------------------------
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1083 - 📊 当前使用: DeepSeek
+2025-08-17 23:01:57,600 - __main__ - INFO - print_model_provider_configs:1084 - ==================================================
+
+2025-08-17 23:01:57,600 - __main__ - INFO - main:1314 - [INFO] 运行在独立模式（非PySpark环境）
+2025-08-17 23:01:57,600 - __main__ - INFO - main:1320 - [INFO] 飞书应用ID: cli_a8ef4e27bd85900b
+2025-08-17 23:01:57,600 - __main__ - INFO - main:1323 - [INFO] 正在获取飞书访问令牌...
+2025-08-17 23:01:57,772 - __main__ - INFO - get_tenant_access_token:132 - 成功获取tenant_access_token
+2025-08-17 23:01:57,773 - __main__ - INFO - main:1328 - [SUCCESS] 成功获取访问令牌
+2025-08-17 23:01:57,774 - __main__ - INFO - main:1331 - [INFO] 开始获取AI新闻...
+2025-08-17 23:01:57,774 - __main__ - INFO - get_ai_news:784 - 正在从 36氪 (优先级: 5) 获取新闻...
+2025-08-17 23:01:57,774 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 36氪 获取新闻...
+2025-08-17 23:01:58,642 - __main__ - INFO - get_ai_news:784 - 正在从 机器之心 (优先级: 5) 获取新闻...
+2025-08-17 23:01:58,642 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 机器之心 获取新闻...
+2025-08-17 23:01:58,643 - __main__ - ERROR - get_jiqizhixin_news:291 - 获取机器之心新闻时出错: Message: Unable to obtain driver for chrome; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location
+
+2025-08-17 23:01:58,643 - __main__ - INFO - get_ai_news:784 - 正在从 AMiner (优先级: 4) 获取新闻...
+2025-08-17 23:01:58,643 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AMiner 获取新闻...
+2025-08-17 23:01:58,696 - __main__ - INFO - get_ai_news:784 - 正在从 雷锋网 (优先级: 4) 获取新闻...
+2025-08-17 23:01:58,696 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 雷锋网 获取新闻...
+2025-08-17 23:01:59,041 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat (优先级: 4) 获取新闻...
+2025-08-17 23:01:59,041 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat 获取新闻...
+2025-08-17 23:01:59,660 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch (优先级: 4) 获取新闻...
+2025-08-17 23:01:59,660 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch 获取新闻...
+2025-08-17 23:02:01,528 - __main__ - INFO - get_ai_news:784 - 正在从 InfoQ (优先级: 3) 获取新闻...
+2025-08-17 23:02:01,528 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 InfoQ 获取新闻...
+2025-08-17 23:02:01,601 - __main__ - INFO - get_ai_news:784 - 正在从 VentureBeat RSS (优先级: 3) 获取新闻...
+2025-08-17 23:02:01,601 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 VentureBeat RSS 获取新闻...
+2025-08-17 23:02:02,709 - __main__ - INFO - get_ai_news:784 - 正在从 TechCrunch RSS (优先级: 3) 获取新闻...
+2025-08-17 23:02:02,709 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 TechCrunch RSS 获取新闻...
+2025-08-17 23:02:03,188 - __main__ - INFO - get_ai_news:784 - 正在从 AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 23:02:03,188 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 AI News RSS 获取新闻...
+2025-08-17 23:02:23,466 - __main__ - INFO - get_ai_news:784 - 正在从 MIT AI News RSS (优先级: 2) 获取新闻...
+2025-08-17 23:02:23,467 - __main__ - INFO - get_ai_news_from_source:145 - 正在从 MIT AI News RSS 获取新闻...
+2025-08-17 23:02:24,837 - __main__ - INFO - main:1335 - [SUCCESS] 成功获取 12 条新闻
+2025-08-17 23:02:24,837 - __main__ - INFO - main:1338 - [INFO] 正在生成新闻摘要...
+2025-08-17 23:02:24,941 - __main__ - INFO - get_model_client:77 - 已初始化 DeepSeek 客户端
+2025-08-17 23:02:25,306 - httpx - INFO - _send_single_request:1025 - HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-08-17 23:02:55,712 - __main__ - INFO - main:1341 - [SUCCESS] 生成的日报摘要:
+2025-08-17 23:02:55,713 - __main__ - INFO - main:1342 - ----------------------------------------
+2025-08-17 23:02:55,713 - __main__ - INFO - main:1343 - ### **关键信息与趋势总结**  
+
+#### **1. AI行业大会与生态合作**  
+- **2025 AI Partner百业大会**（36氪）：聚焦AI与各行业结合的“中国式方案”，强调本土化应用与产业赋能。  
+- **报名启动**（36氪）：显示企业积极布局AI生态合作，推动技术落地。  
+
+#### **2. AI技术突破与创新应用**  
+- **医疗领域**：睿心医疗发布全自动AI血管介入手术机器人，标志医疗AI进入“精准全自动”时代。  
+- **通用AI能力**：谷歌Genie 3被称“Sora后最强AI爆款”，推动世界模型（World Model）发展；AI赋能“脑眼手”协同，突破人类极限。  
+- **大模型优化**：研究者尝试降低对齐（alignment）限制，探索更自由的基座模型（如gpt-oss-20b改造）。  
+
+#### **3. AI投资与商业化**  
+- **明星投资案例**：邓紫棋投资AI公司3年获利10倍，反映AI领域高回报潜力。  
+- **新能源+AI结合**：智能水翼艇获李泽湘天使轮融资，显示水上出行领域的技术创新。  
+
+#### **4. 挑战与行业痛点**  
+- **算力成本**：开源模型可能因低效计算消耗大量预算（VentureBeat）。  
+- **基础设施瓶颈**：Gartner指出，GPT-5虽已到来，但支持真正自主智能体（Agentic AI）的底层设施尚未成熟。  
+- **模型迭代**：VentureBeat探讨通过反馈循环（feedback loops）优化LLM持续学习能力。  
+
+### **核心趋势**  
+1. **垂直行业深度整合**：医疗、交通、制造等领域加速AI落地，中国方案强调本土化。  
+2. **大模型竞争升级**：世界模型、多模态能力（如Genie 3）成为前沿方向，同时对齐与自由度平衡受关注。  
+3. **投资热度持续**：从明星资本到新能源跨界，AI商业化变现路径多样化。  
+4. **技术瓶颈待解**：算力效率、基础设施和持续学习机制是未来突破重点。  
+
+（注：中英文来源差异显示，国内侧重应用与生态，海外更关注技术底层与挑战。）
+2025-08-17 23:02:55,713 - __main__ - INFO - main:1344 - ----------------------------------------
+2025-08-17 23:02:55,744 - __main__ - WARNING - main:1354 - [WARNING] 图片文件不存在: /home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg，已移除图片以确保消息发送成功
+2025-08-17 23:02:55,744 - __main__ - INFO - main:1357 - [INFO] 正在发送消息到飞书...
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1104 - 
+==================================================
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1105 - 当前Webhook配置状态:
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1106 - ==================================================
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1112 - 📌 主群聊: ✅ 启用
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1114 -    图片: ✅ 发送
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1112 - 📌 测试群聊: ❌ 禁用
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1112 - 📌 备份群聊: ❌ 禁用
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1113 -    URL: https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1114 -    图片: ❌ 不发送
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1115 - ------------------------------
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1119 - 📊 总计: 1/3 个webhook已启用
+2025-08-17 23:02:55,745 - __main__ - INFO - print_webhook_configs:1120 - ==================================================
+
+2025-08-17 23:02:55,745 - __main__ - INFO - send_to_multiple_webhooks:1158 - 🚀 开始并发发送到 1 个webhook...
+2025-08-17 23:02:56,503 - __main__ - ERROR - send_to_multiple_webhooks:1223 - ❌ 主群聊: 发送异常 - 'str' object has no attribute 'error'
+2025-08-17 23:02:56,504 - __main__ - INFO - send_to_multiple_webhooks:1229 - 
+==================================================
+2025-08-17 23:02:56,504 - __main__ - INFO - send_to_multiple_webhooks:1230 - 📊 发送结果统计:
+2025-08-17 23:02:56,504 - __main__ - INFO - send_to_multiple_webhooks:1231 - ==================================================
+2025-08-17 23:02:56,504 - __main__ - INFO - send_to_multiple_webhooks:1232 - ✅ 成功: 0
+2025-08-17 23:02:56,504 - __main__ - INFO - send_to_multiple_webhooks:1233 - ❌ 失败: 1
+2025-08-17 23:02:56,504 - __main__ - INFO - send_to_multiple_webhooks:1234 - 📈 总计: 1
+2025-08-17 23:02:56,504 - __main__ - WARNING - send_to_multiple_webhooks:1245 - 
+❌ 失败详情:
+2025-08-17 23:02:56,504 - __main__ - WARNING - send_to_multiple_webhooks:1249 -    - 主群聊: 'str' object has no attribute 'error'
+2025-08-17 23:02:56,504 - __main__ - INFO - send_to_multiple_webhooks:1258 - ==================================================
+
+2025-08-17 23:02:56,504 - __main__ - WARNING - main:1364 - [WARNING] 部分webhook发送失败，请检查日志
+2025-08-17 23:02:56,504 - __main__ - INFO - main:1386 - ============================================================
+2025-08-17 23:02:56,504 - __main__ - INFO - main:1387 - [END] AI日报任务完成 - 2025-08-17 23:02:56
+2025-08-17 23:02:56,504 - __main__ - INFO - main:1388 - 总执行时间: 0:00:58.904505
+2025-08-17 23:02:56,504 - __main__ - INFO - main:1389 - ============================================================

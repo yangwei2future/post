@@ -1,21 +1,23 @@
+import json
+import logging
+import os
+import re
+import sys
+from datetime import datetime
+
+import feedparser
 import requests
 from bs4 import BeautifulSoup
-import os
 from openai import OpenAI
-import json
-from datetime import datetime
-import re
-import time
-import sys
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
-import feedparser
-from config import NEWS_SOURCES, MAX_ARTICLES_PER_SOURCE, MAX_TOTAL_ARTICLES, MAX_ARTICLES_PER_PRIORITY, AI_KEYWORDS, REQUEST_TIMEOUT, RETRY_COUNT, RETRY_DELAY
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from config import (NEWS_SOURCES, MAX_ARTICLES_PER_SOURCE, MAX_TOTAL_ARTICLES, MAX_ARTICLES_PER_PRIORITY,
+                    AI_KEYWORDS, REQUEST_TIMEOUT, LOG_CONFIG, MODEL_PROVIDERS, CURRENT_PROVIDER)
 
 # PySpark支持
 try:
@@ -24,12 +26,65 @@ try:
     PYSPARK_AVAILABLE = True
 except ImportError:
     PYSPARK_AVAILABLE = False
-    print("[WARNING] PySpark not available, running in standalone mode")
+    print("PySpark not available, running in standalone mode")
 
-# 配置OpenAI API
-# 请将下面的"your_actual_api_key_here"替换为您从deepseek获取的实际API密钥
-API_KEY = "sk-e9c92f4884e742c1a533d17c1ab729d0"
-client = OpenAI(api_key=API_KEY, base_url="https://api.deepseek.com/")
+# 初始化模型客户端
+def get_model_client(provider_name=None, logger=None):
+    """获取指定模型供应商的客户端"""
+    if provider_name is None:
+        provider_name = CURRENT_PROVIDER
+    
+    if provider_name not in MODEL_PROVIDERS:
+        if logger:
+            logger.error(f"不支持的模型供应商: {provider_name}")
+        else:
+            print(f"不支持的模型供应商: {provider_name}")
+        return None
+    
+    provider_config = MODEL_PROVIDERS[provider_name]
+    
+    if not provider_config.get("enabled", True):
+        if logger:
+            logger.error(f"模型供应商 {provider_name} 未启用")
+        else:
+            print(f"模型供应商 {provider_name} 未启用")
+        return None
+    
+    try:
+        if provider_name == "deepseek":
+            client = OpenAI(
+                api_key=provider_config["api_key"],
+                base_url=provider_config["base_url"]
+            )
+        elif provider_name == "kimi":
+            client = OpenAI(
+                api_key=provider_config["api_key"],
+                base_url=provider_config["base_url"]
+            )
+        elif provider_name == "glm":
+            client = OpenAI(
+                api_key=provider_config["api_key"],
+                base_url=provider_config["base_url"]
+            )
+        else:
+            if logger:
+                logger.error(f"不支持的模型供应商: {provider_name}")
+            else:
+                print(f"不支持的模型供应商: {provider_name}")
+            return None
+        
+        if logger:
+            logger.info(f"已初始化 {provider_config['name']} 客户端")
+        else:
+            print(f"已初始化 {provider_config['name']} 客户端")
+        
+        return client
+    except Exception as e:
+        if logger:
+            logger.error(f"初始化 {provider_config['name']} 客户端失败: {e}")
+        else:
+            print(f"初始化 {provider_config['name']} 客户端失败: {e}")
+        return None
 
 def setup_pyspark_environment():
     """设置PySpark环境"""
@@ -52,13 +107,13 @@ def setup_pyspark_environment():
         conf.set("spark.executorEnv.PYTHONPATH", ":".join(sys.path))
         
         spark = SparkSession.builder.config(conf=conf).getOrCreate()
-        print(f"[SUCCESS] PySpark session created. App ID: {spark.sparkContext.applicationId}")
+        logger.info(f"PySpark session created. App ID: {spark.sparkContext.applicationId}")
         return spark
     except Exception as e:
-        print(f"[ERROR] Failed to create PySpark session: {e}")
+        logger.error(f"Failed to create PySpark session: {e}")
         return None
 
-def get_tenant_access_token(app_id, app_secret):
+def get_tenant_access_token(app_id, app_secret, logger):
     """获取飞书应用的tenant_access_token"""
     url = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal"
     headers = {
@@ -74,49 +129,51 @@ def get_tenant_access_token(app_id, app_secret):
         result = response.json()
         if result.get("code") == 0:
             token = result["tenant_access_token"]
-            print("成功获取tenant_access_token")
+            logger.info("成功获取tenant_access_token")
             return token
         else:
-            print("获取tenant_access_token失败: {}".format(result.get("msg")))
+            logger.error(f"获取tenant_access_token失败: {result.get('msg')}")
             return None
     except Exception as e:
-        print(f"获取tenant_access_token时出错: {e}")
+        logger.error(f"获取tenant_access_token时出错: {e}")
         return None
 
-def get_ai_news_from_source(url, source_name="机器之心"):
+def get_ai_news_from_source(url, source_name="机器之心", logger=None):
     """从指定URL获取AI新闻"""
     try:
-        print(f"正在从 {source_name} 获取新闻...")
+        if logger:
+            logger.info(f"正在从 {source_name} 获取新闻...")
         
         # 根据不同的数据源使用不同的解析策略
         if source_name == "机器之心":
-            return get_jiqizhixin_news(url, source_name)
+            return get_jiqizhixin_news(url, source_name, logger)
         elif source_name == "36氪":
-            return get_36kr_news(url, source_name)
+            return get_36kr_news(url, source_name, logger)
         elif source_name == "InfoQ":
-            return get_infoq_news(url, source_name)
+            return get_infoq_news(url, source_name, logger)
         elif source_name == "AMiner":
-            return get_aminer_news(url, source_name)
+            return get_aminer_news(url, source_name, logger)
         elif source_name == "雷锋网":
-            return get_leiphone_news(url, source_name)
+            return get_leiphone_news(url, source_name, logger)
         elif source_name == "VentureBeat":
-            return get_venturebeat_news(url, source_name)
+            return get_venturebeat_news(url, source_name, logger)
         elif source_name == "TechCrunch":
-            return get_techcrunch_news(url, source_name)
+            return get_techcrunch_news(url, source_name, logger)
         elif source_name.endswith("RSS") or "rss" in source_name.lower():
-            return get_rss_news(url, source_name)
+            return get_rss_news(url, source_name, logger)
         elif source_name.endswith("API") or "api" in source_name.lower():
-            return get_api_news(url, source_name)
+            return get_api_news(url, source_name, logger)
         else:
-            return get_generic_news(url, source_name)
+            return get_generic_news(url, source_name, logger)
     except Exception as e:
-        print(f"从 {source_name} 获取新闻时出错 {url}: {e}")
+        if logger:
+            logger.error(f"从 {source_name} 获取新闻时出错 {url}: {e}")
         return []
 
-def get_jiqizhixin_news(url, source_name):
+def get_jiqizhixin_news(url, source_name, logger=None):
     """获取机器之心新闻"""
     try:
-        print(f"[DEBUG] 初始化Chrome浏览器配置...")
+        if logger: logger.debug(f"初始化Chrome浏览器配置...")
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
@@ -139,24 +196,24 @@ def get_jiqizhixin_news(url, source_name):
         chrome_options.binary_location = "/usr/bin/google-chrome-stable"
         service = Service(executable_path="/usr/bin/chromedriver")
         
-        print(f"[DEBUG] 启动Chrome浏览器...")
+        if logger: logger.debug(f"启动Chrome浏览器...")
         driver = webdriver.Chrome(service=service, options=chrome_options)
-        print(f"[DEBUG] 正在访问页面: {url}")
+        if logger: logger.debug(f"正在访问页面: {url}")
         driver.get(url)
         
-        print(f"[DEBUG] 等待页面加载...")
+        if logger: logger.debug(f"等待页面加载...")
         wait = WebDriverWait(driver, 30)
         try:
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, "home__left-body")))
         except:
-            print(f"[WARNING] 未找到home__left-body元素，尝试其他选择器")
+            if logger: logger.warning(f"未找到home__left-body元素，尝试其他选择器")
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "body")))
         
-        print(f"[DEBUG] 获取页面源码...")
+        if logger: logger.debug(f"获取页面源码...")
         page_source = driver.page_source
-        print(f"[DEBUG] 页面源码长度: {len(page_source)} 字符")
+        if logger: logger.debug(f"页面源码长度: {len(page_source)} 字符")
         
-        print(f"[DEBUG] 关闭浏览器...")
+        if logger: logger.debug(f"关闭浏览器...")
         driver.quit()
         
         soup = BeautifulSoup(page_source, "html.parser")
@@ -231,10 +288,10 @@ def get_jiqizhixin_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取机器之心新闻时出错: {e}")
+        if logger: logger.error(f"获取机器之心新闻时出错: {e}")
         return []
 
-def get_36kr_news(url, source_name):
+def get_36kr_news(url, source_name, logger=None):
     """获取36氪AI新闻"""
     try:
         # 先尝试使用requests获取
@@ -316,10 +373,10 @@ def get_36kr_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取36氪新闻时出错: {e}")
+        if logger: logger.error(f"获取36氪新闻时出错: {e}")
         return []
 
-def get_infoq_news(url, source_name):
+def get_infoq_news(url, source_name, logger=None):
     """获取InfoQ AI新闻"""
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
@@ -356,10 +413,10 @@ def get_infoq_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取InfoQ新闻时出错: {e}")
+        if logger: logger.error(f"获取InfoQ新闻时出错: {e}")
         return []
 
-def get_aminer_news(url, source_name):
+def get_aminer_news(url, source_name, logger=None):
     """获取AMiner AI新闻"""
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
@@ -396,10 +453,10 @@ def get_aminer_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取AMiner新闻时出错: {e}")
+        if logger: logger.error(f"获取AMiner新闻时出错: {e}")
         return []
 
-def get_leiphone_news(url, source_name):
+def get_leiphone_news(url, source_name, logger=None):
     """获取雷锋网AI新闻"""
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
@@ -436,10 +493,10 @@ def get_leiphone_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取雷锋网新闻时出错: {e}")
+        if logger: logger.error(f"获取雷锋网新闻时出错: {e}")
         return []
 
-def get_venturebeat_news(url, source_name):
+def get_venturebeat_news(url, source_name, logger=None):
     """获取VentureBeat AI新闻"""
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
@@ -475,10 +532,10 @@ def get_venturebeat_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取VentureBeat新闻时出错: {e}")
+        if logger: logger.error(f"获取VentureBeat新闻时出错: {e}")
         return []
 
-def get_techcrunch_news(url, source_name):
+def get_techcrunch_news(url, source_name, logger=None):
     """获取TechCrunch AI新闻"""
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
@@ -514,13 +571,13 @@ def get_techcrunch_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取TechCrunch新闻时出错: {e}")
+        if logger: logger.error(f"获取TechCrunch新闻时出错: {e}")
         return []
 
-def get_generic_news(url, source_name):
+def get_generic_news(url, source_name, logger=None):
     """通用新闻获取方法"""
     try:
-        print(f"[DEBUG] 初始化Chrome浏览器配置(通用方法)...")
+        if logger: logger.debug(f"初始化Chrome浏览器配置(通用方法)...")
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
@@ -543,23 +600,23 @@ def get_generic_news(url, source_name):
         chrome_options.binary_location = "/usr/bin/google-chrome-stable"
         service = Service(executable_path="/usr/bin/chromedriver")
         
-        print(f"[DEBUG] 启动Chrome浏览器(通用方法)...")
+        if logger: logger.debug(f"启动Chrome浏览器(通用方法)...")
         driver = webdriver.Chrome(service=service, options=chrome_options)
-        print(f"[DEBUG] 正在访问页面(通用方法): {url}")
+        if logger: logger.debug(f"正在访问页面(通用方法): {url}")
         driver.get(url)
         
-        print(f"[DEBUG] 等待页面加载(通用方法)...")
+        if logger: logger.debug(f"等待页面加载(通用方法)...")
         wait = WebDriverWait(driver, 30)
         try:
             wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
         except:
-            print(f"[WARNING] 页面加载超时，继续处理")
+            if logger: logger.warning(f"页面加载超时，继续处理")
         
-        print(f"[DEBUG] 获取页面源码(通用方法)...")
+        if logger: logger.debug(f"获取页面源码(通用方法)...")
         page_source = driver.page_source
-        print(f"[DEBUG] 页面源码长度(通用方法): {len(page_source)} 字符")
+        if logger: logger.debug(f"页面源码长度(通用方法): {len(page_source)} 字符")
         
-        print(f"[DEBUG] 关闭浏览器(通用方法)...")
+        if logger: logger.debug(f"关闭浏览器(通用方法)...")
         driver.quit()
         
         soup = BeautifulSoup(page_source, "html.parser")
@@ -582,10 +639,10 @@ def get_generic_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取通用新闻时出错: {e}")
+        if logger: logger.error(f"获取通用新闻时出错: {e}")
         return []
 
-def get_rss_news(url, source_name):
+def get_rss_news(url, source_name, logger=None):
     """获取RSS/ATOM新闻"""
     try:
         feed = feedparser.parse(url)
@@ -627,10 +684,10 @@ def get_rss_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取RSS新闻时出错: {e}")
+        if logger: logger.error(f"获取RSS新闻时出错: {e}")
         return []
 
-def get_api_news(url, source_name):
+def get_api_news(url, source_name, logger=None):
     """获取API新闻"""
     try:
         # 设置请求头
@@ -711,10 +768,10 @@ def get_api_news(url, source_name):
         
         return articles
     except Exception as e:
-        print(f"获取API新闻时出错: {e}")
+        if logger: logger.error(f"获取API新闻时出错: {e}")
         return []
 
-def get_ai_news():
+def get_ai_news(logger=None):
     """从多个数据源获取AI新闻，按照优先级排序"""
     all_articles = []
     
@@ -724,8 +781,8 @@ def get_ai_news():
     
     # 从每个数据源获取新闻
     for source in enabled_sources:
-        print(f"正在从 {source['name']} (优先级: {source.get('priority', 3)}) 获取新闻...")
-        articles = get_ai_news_from_source(source["url"], source["name"])
+        logger.info(f"正在从 {source['name']} (优先级: {source.get('priority', 3)}) 获取新闻...")
+        articles = get_ai_news_from_source(source["url"], source["name"], logger)
         
         # 为每篇文章添加优先级信息
         priority = source.get("priority", 3)
@@ -766,9 +823,23 @@ def get_ai_news():
     
     return priority_articles
 
-def summarize_news(news_list):
+def summarize_news(news_list, logger=None, provider_name=None):
     """使用AI对新闻列表进行摘要"""
     try:
+        # 获取模型客户端
+        client = get_model_client(provider_name, logger)
+        if not client:
+            if logger:
+                logger.error("无法获取模型客户端")
+            else:
+                print("无法获取模型客户端")
+            return "无法生成摘要：模型客户端初始化失败"
+        
+        # 获取供应商配置
+        if provider_name is None:
+            provider_name = CURRENT_PROVIDER
+        provider_config = MODEL_PROVIDERS[provider_name]
+        
         # 构建包含来源信息的新闻文本
         news_items = []
         for news in news_list:
@@ -779,19 +850,23 @@ def summarize_news(news_list):
         news_text = "\n".join(news_items)
         
         response = client.chat.completions.create(
-            model="deepseek-chat",
+            model=provider_config["model"],
             messages=[
                 {"role": "user", "content": f"请总结以下AI新闻，提取关键信息和趋势:\n{news_text}"}
             ],
-            max_tokens=1000
+            max_tokens=provider_config["max_tokens"]
         )
-        print(f"API响应: {response}") # Debugging line
+        if logger:
+            logger.debug(f"API响应: {response}")
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"生成摘要时出错: {e}")
+        if logger:
+            logger.error(f"生成摘要时出错: {e}")
+        else:
+            print(f"生成摘要时出错: {e}")
         return "无法生成摘要。"
 
-def send_to_feishu(webhook_url, summary, news_list, image_key=None):
+def send_to_feishu(webhook_url, summary, news_list, image_key=None, logger=None):
     """发送消息到飞书群聊，支持卡片消息格式"""
     try:
         headers = {
@@ -918,13 +993,19 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
             
         response = requests.post(webhook_url, headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
         response.raise_for_status()
-        print("消息已成功发送到飞书")
+        if logger:
+            logger.info("消息已成功发送到飞书")
+        else:
+            print("消息已成功发送到飞书")
         return True
     except Exception as e:
-        print(f"发送到飞书时出错: {e}")
+        if logger:
+            logger.error(f"发送到飞书时出错: {e}")
+        else:
+            print(f"发送到飞书时出错: {e}")
         return False
 
-def upload_image_to_feishu(image_path, access_token):
+def upload_image_to_feishu(image_path, access_token, logger=None):
     """上传图片到飞书并获取image_key"""
     try:
         upload_url = "https://open.feishu.cn/open-apis/im/v1/images"
@@ -944,107 +1025,368 @@ def upload_image_to_feishu(image_path, access_token):
         result = response.json()
         if result.get("code") == 0:
             image_key = result["data"]["image_key"]
-            print(f"图片上传成功，image_key: {image_key}")
+            if logger:
+                logger.info(f"图片上传成功，image_key: {image_key}")
+            else:
+                print(f"图片上传成功，image_key: {image_key}")
             return image_key
         else:
-            print("图片上传失败: {}".format(result.get("msg")))
+            if logger:
+                logger.error(f"图片上传失败: {result.get('msg')}")
+            else:
+                print(f"图片上传失败: {result.get('msg')}")
             return None
     except Exception as e:
-        print(f"上传图片到飞书时出错: {e}")
+        if logger:
+            logger.error(f"上传图片到飞书时出错: {e}")
+        else:
+            print(f"上传图片到飞书时出错: {e}")
         return None
+
+# 多webhook配置
+WEBHOOK_CONFIGS = [
+    {
+        "name": "主群聊",
+        "url": "https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072",
+        "enabled": True,
+        "send_image": True
+    },
+    {
+        "name": "测试群聊", 
+        "url": "https://open.feishu.cn/open-apis/bot/v2/hook/your_test_webhook_url_here",
+        "enabled": False,
+        "send_image": False
+    },
+    {
+        "name": "备份群聊",
+        "url": "https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here", 
+        "enabled": False,
+        "send_image": False
+    }
+]
+
+def print_model_provider_configs(logger=None):
+    """打印当前模型供应商配置状态"""
+    if logger:
+        logger.info("\n" + "="*50)
+        logger.info("当前模型供应商配置状态:")
+        logger.info("="*50)
+        
+        for provider_name, config in MODEL_PROVIDERS.items():
+            status = "✅ 启用" if config.get("enabled", True) else "❌ 禁用"
+            current = "👉 当前使用" if provider_name == CURRENT_PROVIDER else ""
+            logger.info(f"🤖 {config['name']} ({provider_name}): {status} {current}")
+            logger.info(f"   模型: {config['model']}")
+            logger.info(f"   最大Token: {config['max_tokens']}")
+            logger.info("-" * 30)
+        
+        logger.info(f"📊 当前使用: {MODEL_PROVIDERS[CURRENT_PROVIDER]['name']}")
+        logger.info("="*50 + "\n")
+    else:
+        print("\n" + "="*50)
+        print("当前模型供应商配置状态:")
+        print("="*50)
+        
+        for provider_name, config in MODEL_PROVIDERS.items():
+            status = "✅ 启用" if config.get("enabled", True) else "❌ 禁用"
+            current = "👉 当前使用" if provider_name == CURRENT_PROVIDER else ""
+            print(f"🤖 {config['name']} ({provider_name}): {status} {current}")
+            print(f"   模型: {config['model']}")
+            print(f"   最大Token: {config['max_tokens']}")
+            print("-" * 30)
+        
+        print(f"📊 当前使用: {MODEL_PROVIDERS[CURRENT_PROVIDER]['name']}")
+        print("="*50 + "\n")
+
+def print_webhook_configs(logger=None):
+    """打印当前webhook配置状态"""
+    if logger:
+        logger.info("\n" + "="*50)
+        logger.info("当前Webhook配置状态:")
+        logger.info("="*50)
+        
+        enabled_count = 0
+        for config in WEBHOOK_CONFIGS:
+            status = "✅ 启用" if config["enabled"] else "❌ 禁用"
+            image_status = "✅ 发送" if config["send_image"] else "❌ 不发送"
+            logger.info(f"📌 {config['name']}: {status}")
+            logger.info(f"   URL: {config['url']}")
+            logger.info(f"   图片: {image_status}")
+            logger.info("-" * 30)
+            if config["enabled"]:
+                enabled_count += 1
+        
+        logger.info(f"📊 总计: {enabled_count}/{len(WEBHOOK_CONFIGS)} 个webhook已启用")
+        logger.info("="*50 + "\n")
+    else:
+        # 如果没有logger，使用print作为后备
+        print("\n" + "="*50)
+        print("当前Webhook配置状态:")
+        print("="*50)
+        
+        enabled_count = 0
+        for config in WEBHOOK_CONFIGS:
+            status = "✅ 启用" if config["enabled"] else "❌ 禁用"
+            image_status = "✅ 发送" if config["send_image"] else "❌ 不发送"
+            print(f"📌 {config['name']}: {status}")
+            print(f"   URL: {config['url']}")
+            print(f"   图片: {image_status}")
+            print("-" * 30)
+            if config["enabled"]:
+                enabled_count += 1
+        
+        print(f"📊 总计: {enabled_count}/{len(WEBHOOK_CONFIGS)} 个webhook已启用")
+        print("="*50 + "\n")
+
+def send_to_multiple_webhooks(summary, news_list, image_key=None, logger=None):
+    """并发发送消息到多个webhook"""
+    import concurrent.futures
+
+    print_webhook_configs(logger)
+    
+    # 获取启用的webhook
+    enabled_webhooks = [config for config in WEBHOOK_CONFIGS if config["enabled"]]
+    
+    if not enabled_webhooks:
+        if logger:
+            logger.error("❌ 没有启用的webhook配置")
+        else:
+            print("❌ 没有启用的webhook配置")
+        return False
+    
+    if logger:
+        logger.info(f"🚀 开始并发发送到 {len(enabled_webhooks)} 个webhook...")
+    else:
+        print(f"🚀 开始并发发送到 {len(enabled_webhooks)} 个webhook...")
+    
+    success_count = 0
+    failure_count = 0
+    results = []
+    
+    # 使用线程池并发发送
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(enabled_webhooks), 5)) as executor:
+        # 创建发送任务
+        future_to_config = {}
+        for config in enabled_webhooks:
+            # 根据配置决定是否发送图片
+            webhook_image_key = image_key if config["send_image"] else None
+            future = executor.submit(send_to_feishu, config["url"], summary, news_list, webhook_image_key, config["name"])
+            future_to_config[future] = config
+        
+        # 等待所有任务完成
+        for future in concurrent.futures.as_completed(future_to_config):
+            config = future_to_config[future]
+            try:
+                result = future.result()
+                
+                # 标准化处理返回值
+                if isinstance(result, bool):
+                    success = result
+                    error_msg = None
+                elif isinstance(result, str):
+                    success = False
+                    error_msg = result
+                else:
+                    success = False
+                    error_msg = f"返回值类型错误: {type(result)}"
+                
+                results.append({
+                    "name": config["name"],
+                    "success": success,
+                    "error": error_msg
+                })
+                
+                if success:
+                    success_count += 1
+                    log_msg = f"✅ {config['name']}: 发送成功"
+                else:
+                    failure_count += 1
+                    log_msg = f"❌ {config['name']}: 发送失败"
+                    if error_msg:
+                        log_msg += f" - {error_msg}"
+                
+                if logger:
+                    logger.info(log_msg)
+                else:
+                    print(log_msg)
+                    
+            except Exception as e:
+                failure_count += 1
+                error_msg = str(e)
+                results.append({
+                    "name": config["name"],
+                    "success": False,
+                    "error": error_msg
+                })
+                log_msg = f"❌ {config['name']}: 发送异常 - {error_msg}"
+                if logger:
+                    logger.error(log_msg)
+                else:
+                    print(log_msg)
+    
+    # 打印最终统计
+    if logger:
+        logger.info("\n" + "="*50)
+        logger.info("📊 发送结果统计:")
+        logger.info("="*50)
+        logger.info(f"✅ 成功: {success_count}")
+        logger.info(f"❌ 失败: {failure_count}")
+        logger.info(f"📈 总计: {success_count + failure_count}")
+    else:
+        print("\n" + "="*50)
+        print("📊 发送结果统计:")
+        print("="*50)
+        print(f"✅ 成功: {success_count}")
+        print(f"❌ 失败: {failure_count}")
+        print(f"📈 总计: {success_count + failure_count}")
+    
+    if failure_count > 0:
+        if logger:
+            logger.warning("\n❌ 失败详情:")
+            for result in results:
+                if not result["success"]:
+                    error_info = result.get('error', '未知错误') if isinstance(result, dict) else '结果格式错误'
+                    logger.warning(f"   - {result.get('name', '未知webhook')}: {error_info}")
+        else:
+            print("\n❌ 失败详情:")
+            for result in results:
+                if not result["success"]:
+                    error_info = result.get('error', '未知错误') if isinstance(result, dict) else '结果格式错误'
+                    print(f"   - {result.get('name', '未知webhook')}: {error_info}")
+    
+    if logger:
+        logger.info("="*50 + "\n")
+    else:
+        print("="*50 + "\n")
+    
+    # 如果至少有一个成功，就返回True
+    return success_count > 0
+
+def setup_logging():
+    """设置日志配置"""
+    try:
+        # 创建日志目录
+        log_dir = os.path.dirname(LOG_CONFIG["file"])
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+        # 配置日志
+        logging.basicConfig(
+            level=getattr(logging, LOG_CONFIG["level"]),
+            format=LOG_CONFIG["format"],
+            handlers=[
+                logging.FileHandler(LOG_CONFIG["file"], encoding='utf-8'),
+                logging.StreamHandler(sys.stdout)
+            ]
+        )
+
+        logger = logging.getLogger(__name__)
+        logger.info("日志系统初始化完成")
+        return logger
+    except Exception as e:
+        print(f"日志系统初始化失败: {e}")  # 这里不能使用logger，因为logger还未初始化
+        # 返回一个基本的logger
+        logging.basicConfig(level=logging.INFO)
+        return logging.getLogger(__name__)
 
 def main():
     """主函数 - 支持PySpark环境"""
     start_time = datetime.now()
-    print("=" * 60)
-    print(f"[START] 开始执行AI日报任务 - {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-    print("=" * 60)
+    logger = setup_logging()
+
+    logger.info("=" * 60)
+    logger.info(f"[START] 开始执行AI日报任务 - {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info("=" * 60)
+    logger.info(f"日志级别: {LOG_CONFIG['level']}")
+    logger.info(f"日志文件: {LOG_CONFIG['file']}")
+    
+    # 打印模型供应商配置
+    print_model_provider_configs(logger)
     
     # 初始化PySpark环境（如果可用）
     spark = None
     if PYSPARK_AVAILABLE:
-        print("[INFO] 正在初始化PySpark环境...")
+        logger.info("正在初始化PySpark环境...")
         spark = setup_pyspark_environment()
         if not spark:
-            print("[WARNING] PySpark初始化失败，降级到独立模式运行")
+            logger.warning("PySpark初始化失败，降级到独立模式运行")
     else:
-        print("[INFO] 运行在独立模式（非PySpark环境）")
+        logger.info("[INFO] 运行在独立模式（非PySpark环境）")
     
     try:
         # 飞书应用凭证
         feishu_app_id = "cli_a8ef4e27bd85900b"
         feishu_app_secret = "By4Y7Z2NpQvovyJ0Efp2CgyOF8dAC7bV"
-        print(f"[INFO] 飞书应用ID: {feishu_app_id}")
+        logger.info(f"[INFO] 飞书应用ID: {feishu_app_id}")
         
         # 获取tenant_access_token
-        print("[INFO] 正在获取飞书访问令牌...")
-        access_token = get_tenant_access_token(feishu_app_id, feishu_app_secret)
+        logger.info("[INFO] 正在获取飞书访问令牌...")
+        access_token = get_tenant_access_token(feishu_app_id, feishu_app_secret, logger)
         if not access_token:
-            print("[ERROR] 无法获取access_token，退出任务。")
+            logger.error("[ERROR] 无法获取access_token，退出任务。")
             return
-        print("[SUCCESS] 成功获取访问令牌")
+        logger.info("[SUCCESS] 成功获取访问令牌")
 
         # 获取AI新闻（从多个数据源）
-        print("[INFO] 开始获取AI新闻...")
-        ai_news = get_ai_news()
+        logger.info("[INFO] 开始获取AI新闻...")
+        ai_news = get_ai_news(logger)
         
         if ai_news:
-            print(f"[SUCCESS] 成功获取 {len(ai_news)} 条新闻")
+            logger.info(f"[SUCCESS] 成功获取 {len(ai_news)} 条新闻")
             
             # 生成摘要
-            print("[INFO] 正在生成新闻摘要...")
-            summary = summarize_news(ai_news)
+            logger.info("[INFO] 正在生成新闻摘要...")
+            summary = summarize_news(ai_news, logger)
             
-            print("[SUCCESS] 生成的日报摘要:")
-            print("-" * 40)
-            print(summary)
-            print("-" * 40)
-            
-            # 飞书webhook URL
-            feishu_webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/23b17757-5370-4f6c-92ab-7625569ca7a7"
-            print(f"[INFO] 飞书Webhook URL: {feishu_webhook}")
+            logger.info("[SUCCESS] 生成的日报摘要:")
+            logger.info("-" * 40)
+            logger.info(summary)
+            logger.info("-" * 40)
             
             # 上传主题图片并发送
             # 检查图片文件是否存在，如果不存在则跳过图片上传
             image_path = "/home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg" # 选择一张AI相关的图片
             image_key = None
             if os.path.exists(image_path):
-                print("[INFO] 正在上传图片到飞书...")
-                image_key = upload_image_to_feishu(image_path, access_token)
+                logger.info("[INFO] 正在上传图片到飞书...")
+                image_key = upload_image_to_feishu(image_path, access_token, logger)
             else:
-                print(f"[WARNING] 图片文件不存在: {image_path}，已移除图片以确保消息发送成功")
+                logger.warning(f"[WARNING] 图片文件不存在: {image_path}，已移除图片以确保消息发送成功")
                 # 已移除图片部分，避免可能的图片问题导致消息发送失败
             
-            print("[INFO] 正在发送消息到飞书...")
-            if image_key:
-                send_to_feishu(feishu_webhook, summary, ai_news, image_key)
+            logger.info("[INFO] 正在发送消息到飞书...")
+            # 使用多webhook发送功能
+            send_success = send_to_multiple_webhooks(summary, ai_news, image_key, logger)
+            
+            if send_success:
+                logger.info("[SUCCESS] AI日报已成功发送到所有配置的webhook")
             else:
-                send_to_feishu(feishu_webhook, summary, ai_news) # 如果图片上传失败，则只发送文本
+                logger.warning("[WARNING] 部分webhook发送失败，请检查日志")
             
         else:
-            print("[ERROR] 未能获取AI新闻")
+            logger.error("[ERROR] 未能获取AI新闻")
             
     except Exception as e:
-        print(f"[ERROR] 主函数执行出错: {e}")
+        logger.error(f"[ERROR] 主函数执行出错: {e}")
         import traceback
-        print(f"[ERROR] 详细错误信息:\n{traceback.format_exc()}")
+        logger.error(f"[ERROR] 详细错误信息:\n{traceback.format_exc()}")
         
     finally:
         # 清理PySpark资源
         if spark:
-            print("[INFO] 正在清理PySpark资源...")
+            logger.info("正在清理PySpark资源...")
             try:
                 spark.stop()
-                print("[SUCCESS] PySpark资源已清理")
+                logger.info("PySpark资源已清理")
             except Exception as e:
-                print(f"[ERROR] 清理PySpark资源时出错: {e}")
+                logger.error(f"清理PySpark资源时出错: {e}")
         
         end_time = datetime.now()
         duration = end_time - start_time
-        print("=" * 60)
-        print(f"[END] AI日报任务完成 - {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"[INFO] 总执行时间: {duration}")
-        print("=" * 60)
+        logger.info("=" * 60)
+        logger.info(f"[END] AI日报任务完成 - {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"总执行时间: {duration}")
+        logger.info("=" * 60)
 
 if __name__ == "__main__":
     main()

@@ -6,6 +6,10 @@ import json
 from datetime import datetime
 import re
 import time
+import sys
+import logging
+import argparse
+import signal
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -14,6 +18,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 import feedparser
+
+# 尝试导入APScheduler，如果失败则提示用户安装
+try:
+    from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    APSCHEDULER_AVAILABLE = True
+except ImportError:
+    APSCHEDULER_AVAILABLE = False
+    print("[WARNING] APScheduler未安装，定时任务功能不可用。请运行: pip install APScheduler>=3.10.0")
 
 # 配置参数
 NEWS_SOURCES = [
@@ -59,10 +72,297 @@ REQUEST_TIMEOUT = 30  # 请求超时时间（秒）
 RETRY_COUNT = 3      # 重试次数
 RETRY_DELAY = 2      # 重试间隔（秒）
 
+# 定时任务配置
+SCHEDULER_CONFIG = {
+    "enabled": False,  # 是否启用定时任务
+    "timezone": "Asia/Shanghai",  # 时区设置
+    "cron_expression": "0 9 * * *",  # 默认每天上午9点执行
+    "max_instances": 1,  # 最大并发实例数
+    "misfire_grace_time": 3600,  # 错过执行时间的宽容时间（秒）
+}
+
+# 日志配置
+LOG_CONFIG = {
+    "level": "INFO",  # 日志级别: DEBUG, INFO, WARNING, ERROR
+    "file": "ai_daily_robot.log",  # 日志文件路径
+    "max_size": 10485760,  # 日志文件最大大小（10MB）
+    "backup_count": 5,  # 保留的日志文件数量
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # 日志格式
+}
+
+# 多Webhook配置
+WEBHOOK_CONFIGS = [
+    {
+        "name": "主群聊",
+        "url": "https://open.feishu.cn/open-apis/bot/v2/hook/4d6b0afa-c34f-4b0f-9bb3-1716bc2ed4a3",
+        "enabled": True,
+        "send_image": True
+    },
+    {
+        "name": "测试群聊", 
+        "url": "https://open.feishu.cn/open-apis/bot/v2/hook/02880094-6e28-4dea-a815-ff02fea49072",
+        "enabled": True,
+        "send_image": True
+    },
+    {
+        "name": "备份群聊",
+        "url": "https://open.feishu.cn/open-apis/bot/v2/hook/your_backup_webhook_url_here", 
+        "enabled": False,
+        "send_image": False
+    }
+]
+
 # 配置OpenAI API
 # 请将下面的"your_actual_api_key_here"替换为您从deepseek获取的实际API密钥
 API_KEY = "sk-e9c92f4884e742c1a533d17c1ab729d0"
 client = OpenAI(api_key=API_KEY, base_url="https://api.deepseek.com/")
+
+# 全局变量
+scheduler = None
+logger = None
+shutdown_event = None
+
+def setup_logging():
+    """设置日志配置"""
+    try:
+        # 创建日志目录
+        log_dir = os.path.dirname(LOG_CONFIG["file"])
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        
+        # 配置日志
+        logging.basicConfig(
+            level=getattr(logging, LOG_CONFIG["level"]),
+            format=LOG_CONFIG["format"],
+            handlers=[
+                logging.FileHandler(LOG_CONFIG["file"], encoding='utf-8'),
+                logging.StreamHandler(sys.stdout)
+            ]
+        )
+        
+        global logger
+        logger = logging.getLogger(__name__)
+        logger.info("日志系统初始化完成")
+        return logger
+    except Exception as e:
+        print(f"日志系统初始化失败: {e}")
+        # 返回一个基本的logger
+        logging.basicConfig(level=logging.INFO)
+        return logging.getLogger(__name__)
+
+def signal_handler(signum, frame):
+    """信号处理器，用于优雅关闭"""
+    global logger, scheduler, shutdown_event
+    
+    if logger:
+        logger.info(f"接收到信号 {signum}，准备关闭程序...")
+    else:
+        print(f"接收到信号 {signum}，准备关闭程序...")
+    
+    if shutdown_event:
+        shutdown_event.set()
+    
+    if scheduler:
+        scheduler.shutdown(wait=True)
+    
+    if logger:
+        logger.info("程序已安全关闭")
+    else:
+        print("程序已安全关闭")
+    
+    sys.exit(0)
+
+def setup_scheduler():
+    """设置定时任务调度器"""
+    global scheduler
+    
+    if not APSCHEDULER_AVAILABLE:
+        if logger:
+            logger.error("APScheduler不可用，无法启动定时任务")
+        else:
+            print("APScheduler不可用，无法启动定时任务")
+        return None
+    
+    try:
+        scheduler = BackgroundScheduler(
+            timezone=SCHEDULER_CONFIG["timezone"],
+            max_instances=SCHEDULER_CONFIG["max_instances"]
+        )
+        
+        # 添加定时任务
+        scheduler.add_job(
+            func=execute_scheduled_task,
+            trigger=CronTrigger.from_crontab(SCHEDULER_CONFIG["cron_expression"]),
+            id='ai_daily_robot_task',
+            name='AI日报机器人定时任务',
+            replace_existing=True,
+            misfire_grace_time=SCHEDULER_CONFIG["misfire_grace_time"]
+        )
+        
+        if logger:
+            logger.info(f"定时任务调度器已设置，cron表达式: {SCHEDULER_CONFIG['cron_expression']}")
+        else:
+            print(f"定时任务调度器已设置，cron表达式: {SCHEDULER_CONFIG['cron_expression']}")
+        
+        return scheduler
+    except Exception as e:
+        if logger:
+            logger.error(f"设置定时任务调度器失败: {e}")
+        else:
+            print(f"设置定时任务调度器失败: {e}")
+        return None
+
+def execute_scheduled_task():
+    """执行定时任务的函数"""
+    global logger
+    
+    try:
+        if logger:
+            logger.info("=" * 60)
+            logger.info(f"[SCHEDULED_TASK] 开始执行定时AI日报任务 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info("=" * 60)
+        else:
+            print("=" * 60)
+            print(f"[SCHEDULED_TASK] 开始执行定时AI日报任务 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print("=" * 60)
+        
+        # 执行主要的AI日报任务
+        execute_ai_robot_task()
+        
+        if logger:
+            logger.info("=" * 60)
+            logger.info(f"[SCHEDULED_TASK] 定时AI日报任务完成 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info("=" * 60)
+        else:
+            print("=" * 60)
+            print(f"[SCHEDULED_TASK] 定时AI日报任务完成 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print("=" * 60)
+            
+    except Exception as e:
+        if logger:
+            logger.error(f"定时任务执行出错: {e}")
+            import traceback
+            logger.error(f"详细错误信息: {traceback.format_exc()}")
+        else:
+            print(f"定时任务执行出错: {e}")
+            import traceback
+            print(f"详细错误信息: {traceback.format_exc()}")
+
+def execute_ai_robot_task():
+    """执行AI机器人核心任务"""
+    global logger
+    
+    try:
+        # 飞书应用凭证
+        feishu_app_id = "cli_a8ef4e27bd85900b"
+        feishu_app_secret = "By4Y7Z2NpQvovyJ0Efp2CgyOF8dAC7bV"
+        
+        if logger:
+            logger.info(f"飞书应用ID: {feishu_app_id}")
+        else:
+            print(f"飞书应用ID: {feishu_app_id}")
+        
+        # 获取tenant_access_token
+        if logger:
+            logger.info("正在获取飞书访问令牌...")
+        else:
+            print("正在获取飞书访问令牌...")
+        
+        access_token = get_tenant_access_token(feishu_app_id, feishu_app_secret)
+        if not access_token:
+            if logger:
+                logger.error("无法获取access_token，任务失败。")
+            else:
+                print("无法获取access_token，任务失败。")
+            return False
+        
+        if logger:
+            logger.info("成功获取访问令牌")
+        else:
+            print("成功获取访问令牌")
+
+        # 获取AI新闻
+        if logger:
+            logger.info("开始获取AI新闻...")
+        else:
+            print("开始获取AI新闻...")
+        
+        ai_news = get_ai_news()
+        
+        if ai_news:
+            if logger:
+                logger.info(f"成功获取 {len(ai_news)} 条新闻")
+            else:
+                print(f"成功获取 {len(ai_news)} 条新闻")
+            
+            # 生成摘要
+            if logger:
+                logger.info("正在生成新闻摘要...")
+            else:
+                print("正在生成新闻摘要...")
+            
+            summary = summarize_news(ai_news)
+            
+            if logger:
+                logger.info("生成的日报摘要:")
+                logger.info("-" * 40)
+                logger.info(summary)
+                logger.info("-" * 40)
+            else:
+                print("生成的日报摘要:")
+                print("-" * 40)
+                print(summary)
+                print("-" * 40)
+            
+            # 上传主题图片
+            image_path = "/home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg"
+            image_key = None
+            if os.path.exists(image_path):
+                if logger:
+                    logger.info(f"找到图片文件，开始上传: {image_path}")
+                else:
+                    print(f"找到图片文件，开始上传: {image_path}")
+                image_key = upload_image_to_feishu(image_path, access_token)
+            else:
+                if logger:
+                    logger.warning(f"图片文件不存在: {image_path}，部分webhook将不包含图片")
+                else:
+                    print(f"图片文件不存在: {image_path}，部分webhook将不包含图片")
+            
+            # 显示当前webhook配置
+            print_webhook_configs()
+            
+            # 发送到多个webhook
+            if logger:
+                logger.info("开始发送消息到多个飞书群聊...")
+            else:
+                print("开始发送消息到多个飞书群聊...")
+            
+            success_count, failed_count = send_to_multiple_webhooks(summary, ai_news, image_key)
+            
+            if logger:
+                logger.info(f"Webhook发送结果统计: 成功 {success_count} 个，失败 {failed_count} 个")
+            else:
+                print(f"Webhook发送结果统计: 成功 {success_count} 个，失败 {failed_count} 个")
+            
+            return True
+        else:
+            if logger:
+                logger.error("未能获取AI新闻")
+            else:
+                print("未能获取AI新闻")
+            return False
+            
+    except Exception as e:
+        if logger:
+            logger.error(f"AI机器人任务执行出错: {e}")
+            import traceback
+            logger.error(f"详细错误信息: {traceback.format_exc()}")
+        else:
+            print(f"AI机器人任务执行出错: {e}")
+            import traceback
+            print(f"详细错误信息: {traceback.format_exc()}")
+        return False
 
 def get_tenant_access_token(app_id, app_secret):
     """获取飞书应用的tenant_access_token"""
@@ -806,10 +1106,10 @@ def summarize_news(news_list):
         print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return "无法生成摘要。"
 
-def send_to_feishu(webhook_url, summary, news_list, image_key=None):
+def send_to_feishu(webhook_url, summary, news_list, image_key=None, webhook_name="未命名"):
     """发送消息到飞书群聊，支持卡片消息格式"""
     try:
-        print(f"[INFO] 开始发送消息到飞书...")
+        print(f"[INFO] 开始发送消息到飞书 [{webhook_name}]...")
         print(f"[DEBUG] 飞书Webhook URL: {webhook_url[:50]}...")
         print(f"[DEBUG] 摘要长度: {len(summary)} 字符")
         print(f"[DEBUG] 新闻数量: {len(news_list)}")
@@ -943,13 +1243,60 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
         print(f"[DEBUG] 飞书API响应内容: {response.text}")
         
         response.raise_for_status()
-        print("[INFO] 消息已成功发送到飞书")
+        print(f"[INFO] 消息已成功发送到飞书 [{webhook_name}]")
         return True
     except Exception as e:
-        print(f"[ERROR] 发送到飞书时出错: {e}")
+        print(f"[ERROR] 发送到飞书 [{webhook_name}] 时出错: {e}")
         import traceback
         print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return False
+
+def print_webhook_configs():
+    """打印当前Webhook配置信息"""
+    print("[INFO] 当前Webhook配置:")
+    for i, config in enumerate(WEBHOOK_CONFIGS, 1):
+        status = "启用" if config.get("enabled", True) else "禁用"
+        image_support = "支持" if config.get("send_image", False) else "不支持"
+        print(f"  {i}. [{config['name']}] - 状态: {status}, 图片: {image_support}")
+        print(f"     URL: {config['url'][:50]}...")
+
+def send_to_multiple_webhooks(summary, news_list, image_key=None):
+    """发送消息到多个飞书群聊"""
+    print(f"[INFO] 开始发送消息到多个Webhook，共 {len(WEBHOOK_CONFIGS)} 个配置")
+    
+    success_count = 0
+    failed_count = 0
+    
+    for config in WEBHOOK_CONFIGS:
+        if not config.get("enabled", True):
+            print(f"[INFO] 跳过已禁用的Webhook [{config['name']}]")
+            continue
+            
+        webhook_name = config["name"]
+        webhook_url = config["url"]
+        send_image = config.get("send_image", False)
+        
+        print(f"[INFO] 正在发送到Webhook [{webhook_name}]...")
+        
+        try:
+            # 根据配置决定是否发送图片
+            current_image_key = image_key if send_image else None
+            
+            success = send_to_feishu(webhook_url, summary, news_list, current_image_key, webhook_name)
+            
+            if success:
+                success_count += 1
+                print(f"[SUCCESS] 成功发送到 [{webhook_name}]")
+            else:
+                failed_count += 1
+                print(f"[ERROR] 发送到 [{webhook_name}] 失败")
+                
+        except Exception as e:
+            failed_count += 1
+            print(f"[ERROR] 发送到 [{webhook_name}] 时出现异常: {e}")
+    
+    print(f"[INFO] 多Webhook发送完成: 成功 {success_count} 个，失败 {failed_count} 个")
+    return success_count, failed_count
 
 def upload_image_to_feishu(image_path, access_token):
     """上传图片到飞书并获取image_key"""
@@ -981,68 +1328,58 @@ def upload_image_to_feishu(image_path, access_token):
         return None
 
 def main():
-    """主函数"""
-    print("=" * 60)
-    print(f"[START] 开始执行AI日报任务 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("=" * 60)
+    """主函数 - 立即执行AI日报任务"""
+    # 初始化日志系统
+    global logger
+    logger = setup_logging()
     
-    # 飞书应用凭证
-    feishu_app_id = "cli_a8ef4e27bd85900b"
-    feishu_app_secret = "By4Y7Z2NpQvovyJ0Efp2CgyOF8dAC7bV"
-    
-    print(f"[INFO] 飞书应用ID: {feishu_app_id}")
-    
-    # 获取tenant_access_token
-    print("[INFO] 正在获取飞书访问令牌...")
-    access_token = get_tenant_access_token(feishu_app_id, feishu_app_secret)
-    if not access_token:
-        print("[ERROR] 无法获取access_token，退出任务。")
-        return
-
-    # 获取AI新闻（从多个数据源）
-    print("[INFO] 开始获取AI新闻...")
-    ai_news = get_ai_news()
-    
-    if ai_news:
-        print(f"[SUCCESS] 成功获取 {len(ai_news)} 条新闻")
-        
-        # 生成摘要
-        print("[INFO] 开始生成新闻摘要...")
-        summary = summarize_news(ai_news)
-        
-        print("\n" + "=" * 60)
-        print("[SUMMARY] 生成的日报摘要:")
-        print("=" * 60)
-        print(summary)
-        print("=" * 60 + "\n")
-        
-        # 飞书webhook URL
-        feishu_webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/23b17757-5370-4f6c-92ab-7625569ca7a7"
-        
-        # 上传主题图片并发送
-        # 检查图片文件是否存在，如果不存在则跳过图片上传
-        image_path = "/home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg" # 选择一张AI相关的图片
-        image_key = None
-        if os.path.exists(image_path):
-            print(f"[INFO] 找到图片文件，开始上传: {image_path}")
-            image_key = upload_image_to_feishu(image_path, access_token)
-        else:
-            print(f"[WARNING] 图片文件不存在: {image_path}，已移除图片以确保消息发送成功")
-            # 已移除图片部分，避免可能的图片问题导致消息发送失败
-        
-        if image_key:
-            print("[INFO] 开始发送包含图片的飞书消息...")
-            send_to_feishu(feishu_webhook, summary, ai_news, image_key)
-        else:
-            print("[INFO] 开始发送纯文本飞书消息...")
-            send_to_feishu(feishu_webhook, summary, ai_news) # 如果图片上传失败，则只发送文本
-        
+    if logger:
+        logger.info("=" * 60)
+        logger.info(f"AI日报机器人启动 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info("=" * 60)
     else:
-        print("[ERROR] 未能获取AI新闻")
+        print("=" * 60)
+        print(f"AI日报机器人启动 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print("=" * 60)
     
-    print("=" * 60)
-    print(f"[END] AI日报任务完成 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("=" * 60)
+    try:
+        # 执行AI日报任务
+        if logger:
+            logger.info("开始执行AI日报任务...")
+        else:
+            print("开始执行AI日报任务...")
+        
+        success = execute_ai_robot_task()
+        
+        if success:
+            if logger:
+                logger.info("AI日报任务执行完成")
+            else:
+                print("AI日报任务执行完成")
+        else:
+            if logger:
+                logger.error("AI日报任务执行失败")
+            else:
+                print("AI日报任务执行失败")
+    
+    except Exception as e:
+        if logger:
+            logger.error(f"程序运行出错: {e}")
+            import traceback
+            logger.error(f"详细错误信息: {traceback.format_exc()}")
+        else:
+            print(f"程序运行出错: {e}")
+            import traceback
+            print(f"详细错误信息: {traceback.format_exc()}")
+    
+    if logger:
+        logger.info("=" * 60)
+        logger.info(f"AI日报机器人结束 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info("=" * 60)
+    else:
+        print("=" * 60)
+        print(f"AI日报机器人结束 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print("=" * 60)
 
 if __name__ == "__main__":
     main()
