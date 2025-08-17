@@ -891,7 +891,7 @@ def main():
         print(summary)
         
         # 飞书webhook URL
-        feishu_webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/9f92c19d-9dc1-46f2-b5fa-117860a4eea5"
+        feishu_webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/23b17757-5370-4f6c-92ab-7625569ca7a7"
         
         # 上传主题图片并发送
         # 检查图片文件是否存在，如果不存在则跳过图片上传

@@ -6,7 +6,7 @@ NEWS_SOURCES = [
     {"url": "https://36kr.com", "name": "36氪", "enabled": True, "priority": 5},
     {"url": "https://www.jiqizhixin.com/", "name": "机器之心", "enabled": True, "priority": 5},
     {"url": "https://www.aminer.cn/topic/ai", "name": "AMiner", "enabled": True, "priority": 4},
-    {"url": "https://www.infoq.cn/topic/ai", "name": "InfoQ", "enabled": True, "priority": 3},  # 暂时禁用，URL可能需要更新
+    {"url": "https://www.infoq.cn/topic/AI&LLM", "name": "InfoQ", "enabled": True, "priority": 3},  # 暂时禁用，URL可能需要更新
     {"url": "https://www.leiphone.com/category/ai", "name": "雷锋网", "enabled": True, "priority": 4},
 
     # 英文新闻源
