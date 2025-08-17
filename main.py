@@ -221,35 +221,22 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
             "Content-Type": "application/json"
         }
         
-        # 处理摘要内容，移除Markdown格式
-        clean_summary = summary.replace('**', '')  # 移除所有粗体标记
-        clean_summary = clean_summary.replace('### ', '')  # 移除标题标记
+        # 处理摘要内容，保留必要的格式标记
+        clean_summary = summary.replace('### **关键信息与趋势总结**', '**关键信息与趋势总结**')  # 特殊处理主标题
+        clean_summary = clean_summary.replace('### **核心趋势提炼**', '**核心趋势提炼**')  # 特殊处理核心趋势标题
+        clean_summary = clean_summary.replace('### ', '')  # 移除其他主标题标记
         clean_summary = clean_summary.replace('#### ', '')  # 移除子标题标记
+        clean_summary = clean_summary.replace('#', '')  # 移除井号标记
+        clean_summary = clean_summary.replace('`', '')  # 移除反引号标记
+        clean_summary = clean_summary.replace('_', '')  # 移除下划线标记
+        clean_summary = clean_summary.replace('~', '')  # 移除波浪线标记
         
         # 构建卡片消息内容
         card_elements = []
         
-        # 如果有图片，先添加图片
-        if image_key:
-            card_elements.append({
-                "tag": "img",
-                "img_key": image_key,
-                "alt": {
-                    "tag": "plain_text",
-                    "content": "AI日报主题图片"
-                },
-                "mode": "fit_horizontal",
-                "preview": True
-            })
+        # 移除了图片部分，避免可能的图片问题导致消息发送失败
         
-        # 添加标题
-        card_elements.append({
-            "tag": "div",
-            "text": {
-                "tag": "lark_md",
-                "content": "**🤖 AI日报 - {}**".format(datetime.now().strftime("%Y年%m月%d日"))
-            }
-        })
+        # 移除了重复的日期显示，避免与卡片头部标题重复
         
         # 添加分割线
         card_elements.append({
@@ -265,7 +252,7 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
             }
         })
         
-        # 添加摘要内容
+        # 添加摘要内容（优化标题和正文的格式处理）
         # 按段落分割
         summary_paragraphs = clean_summary.split('\n\n')
         for paragraph in summary_paragraphs:
@@ -275,20 +262,25 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
                 formatted_lines = []
                 for line in lines:
                     if line.strip():
+                        # 保留原有的粗体标记
                         formatted_lines.append(line.strip())
                 
                 formatted_paragraph = '\n'.join(formatted_lines)
                 
-                # 为段落添加统一的格式处理
-                if formatted_paragraph.strip().startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
-                    # 数字开头的段落，认为是小节标题
-                    formatted_paragraph = f"**{formatted_paragraph.strip()}**"
-                elif len(formatted_paragraph.strip()) < 50 and ':' in formatted_paragraph:
-                    # 短段落且包含冒号，可能是小节标题
-                    formatted_paragraph = f"**{formatted_paragraph.strip()}**"
-                elif any(keyword in formatted_paragraph for keyword in ['关键信息', '核心趋势', '总结']):
-                    # 包含关键词的段落，添加粗体
-                    formatted_paragraph = f"**{formatted_paragraph.strip()}**"
+                # 识别并处理标题
+                stripped_paragraph = formatted_paragraph.strip()
+                if stripped_paragraph.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')) and len(stripped_paragraph) < 100:
+                    # 数字开头的短段落，认为是小节标题
+                    if not stripped_paragraph.startswith('**'):
+                        formatted_paragraph = f"**{stripped_paragraph}**"
+                elif stripped_paragraph.startswith("关键信息与趋势总结") or stripped_paragraph.startswith("核心趋势总结"):
+                    # 特殊标题处理
+                    if not stripped_paragraph.startswith('**'):
+                        formatted_paragraph = f"**{stripped_paragraph}**"
+                elif len(stripped_paragraph) < 50 and ':' in stripped_paragraph and stripped_paragraph.count(':') <= 1:
+                    # 短段落且包含单个冒号，可能是小节标题
+                    if not stripped_paragraph.startswith('**'):
+                        formatted_paragraph = f"**{stripped_paragraph}**"
                 
                 card_elements.append({
                     "tag": "div",
@@ -318,7 +310,7 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
                 "tag": "div",
                 "text": {
                     "tag": "lark_md",
-                    "content": f"{i}. [{news['title']}]({news['link']})\n日期: {news['date']}"
+                    "content": f"{i}. [{news['title']}]({news['link']}) 日期: {news['date']}"
                 }
             })
         
@@ -419,7 +411,8 @@ def main():
         if os.path.exists(image_path):
             image_key = upload_image_to_feishu(image_path, access_token)
         else:
-            print(f"图片文件不存在: {image_path}，将跳过图片上传")
+            print(f"图片文件不存在: {image_path}，已移除图片以确保消息发送成功")
+            # 已移除图片部分，避免可能的图片问题导致消息发送失败
         
         if image_key:
             send_to_feishu(feishu_webhook, summary, ai_news, image_key)
