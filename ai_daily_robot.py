@@ -6,7 +6,6 @@ import json
 from datetime import datetime
 import re
 import time
-import sys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -15,48 +14,55 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 import feedparser
-from config import NEWS_SOURCES, MAX_ARTICLES_PER_SOURCE, MAX_TOTAL_ARTICLES, MAX_ARTICLES_PER_PRIORITY, AI_KEYWORDS, REQUEST_TIMEOUT, RETRY_COUNT, RETRY_DELAY
 
-# PySpark支持
-try:
-    from pyspark.sql import SparkSession
-    from pyspark import SparkConf
-    PYSPARK_AVAILABLE = True
-except ImportError:
-    PYSPARK_AVAILABLE = False
-    print("[WARNING] PySpark not available, running in standalone mode")
+# 配置参数
+NEWS_SOURCES = [
+    # 中文新闻源 (优先级: 1-5, 5最高)
+    {"url": "https://36kr.com", "name": "36氪", "enabled": True, "priority": 5},
+    {"url": "https://www.jiqizhixin.com/", "name": "机器之心", "enabled": True, "priority": 5},
+    {"url": "https://www.aminer.cn/topic/ai", "name": "AMiner", "enabled": True, "priority": 4},
+    {"url": "https://www.infoq.cn/topic/AI&LLM", "name": "InfoQ", "enabled": True, "priority": 3},
+    {"url": "https://www.leiphone.com/category/ai", "name": "雷锋网", "enabled": True, "priority": 4},
+
+    # 英文新闻源
+    {"url": "https://venturebeat.com/category/ai/", "name": "VentureBeat", "enabled": True, "priority": 4},
+    {"url": "https://techcrunch.com/category/artificial-intelligence/", "name": "TechCrunch", "enabled": True, "priority": 4},
+
+    # RSS源 (通常更新频繁，优先级稍低)
+    {"url": "https://feeds.feedburner.com/venturebeat/SZYF", "name": "VentureBeat RSS", "enabled": True, "priority": 3},
+    {"url": "https://techcrunch.com/feed/", "name": "TechCrunch RSS", "enabled": True, "priority": 3},
+    {"url": "https://www.artificialintelligence-news.com/feed/", "name": "AI News RSS", "enabled": True, "priority": 2},
+    {"url": "https://www.mit.edu/~jintao/ai_news.xml", "name": "MIT AI News RSS", "enabled": True, "priority": 2},
+
+    # API源 (需要API密钥)
+    # {"url": "https://newsapi.org/v2/everything?q=artificial+intelligence&language=en&sortBy=publishedAt&apiKey=YOUR_API_KEY", "name": "NewsAPI", "enabled": False, "priority": 3},
+    # {"url": "https://gnews.io/api/v4/search?q=artificial+intelligence&token=YOUR_API_KEY", "name": "GNews API", "enabled": False, "priority": 3},
+    # {"url": "https://api.currentsapi.services/v1/search?keywords=artificial+intelligence&apiKey=YOUR_API_KEY", "name": "CurrentsAPI", "enabled": False, "priority": 2},
+]
+
+MAX_ARTICLES_PER_SOURCE = 10  # 每个源最多获取的文章数量
+MAX_TOTAL_ARTICLES = 30       # 总共最多返回的文章数量
+MAX_ARTICLES_PER_PRIORITY = {  # 每个优先级最多返回的文章数量
+    5: 8,   # 高优先级源最多8条
+    4: 6,   # 中高优先级源最多6条
+    3: 4,   # 中优先级源最多4条
+    2: 2,   # 低优先级源最多2条
+    1: 1    # 最低优先级源最多1条
+}
+AI_KEYWORDS = [
+    "ai", "artificial intelligence", "machine learning", "deep learning", "neural", 
+    "algorithm", "model", "chatgpt", "openai", "gpt", "transformer", "llm",
+    "人工智能", "机器学习", "深度学习", "智能", "算法", "大模型", "神经网络"
+]
+
+REQUEST_TIMEOUT = 30  # 请求超时时间（秒）
+RETRY_COUNT = 3      # 重试次数
+RETRY_DELAY = 2      # 重试间隔（秒）
 
 # 配置OpenAI API
 # 请将下面的"your_actual_api_key_here"替换为您从deepseek获取的实际API密钥
 API_KEY = "sk-e9c92f4884e742c1a533d17c1ab729d0"
 client = OpenAI(api_key=API_KEY, base_url="https://api.deepseek.com/")
-
-def setup_pyspark_environment():
-    """设置PySpark环境"""
-    if not PYSPARK_AVAILABLE:
-        return None
-    
-    try:
-        # 配置Spark
-        conf = SparkConf()
-        conf.set("spark.app.name", "AI_Daily_Robot")
-        conf.set("spark.master", "yarn")  # 或者 "local[*]" 用于本地测试
-        conf.set("spark.submit.deployMode", "client")
-        conf.set("spark.executor.memory", "2g")
-        conf.set("spark.driver.memory", "2g")
-        conf.set("spark.executor.cores", "2")
-        conf.set("spark.task.maxFailures", "4")
-        
-        # 设置Python环境
-        conf.set("spark.yarn.appMasterEnv.PYTHONPATH", ":".join(sys.path))
-        conf.set("spark.executorEnv.PYTHONPATH", ":".join(sys.path))
-        
-        spark = SparkSession.builder.config(conf=conf).getOrCreate()
-        print(f"[SUCCESS] PySpark session created. App ID: {spark.sparkContext.applicationId}")
-        return spark
-    except Exception as e:
-        print(f"[ERROR] Failed to create PySpark session: {e}")
-        return None
 
 def get_tenant_access_token(app_id, app_secret):
     """获取飞书应用的tenant_access_token"""
@@ -86,7 +92,8 @@ def get_tenant_access_token(app_id, app_secret):
 def get_ai_news_from_source(url, source_name="机器之心"):
     """从指定URL获取AI新闻"""
     try:
-        print(f"正在从 {source_name} 获取新闻...")
+        print(f"[DEBUG] 开始从 {source_name} 获取新闻...")
+        print(f"[DEBUG] 请求URL: {url}")
         
         # 根据不同的数据源使用不同的解析策略
         if source_name == "机器之心":
@@ -110,67 +117,52 @@ def get_ai_news_from_source(url, source_name="机器之心"):
         else:
             return get_generic_news(url, source_name)
     except Exception as e:
-        print(f"从 {source_name} 获取新闻时出错 {url}: {e}")
+        print(f"[ERROR] 从 {source_name} 获取新闻时出错 {url}: {e}")
+        import traceback
+        print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return []
 
 def get_jiqizhixin_news(url, source_name):
     """获取机器之心新闻"""
     try:
-        print(f"[DEBUG] 初始化Chrome浏览器配置...")
+        print(f"[DEBUG] {source_name}: 开始使用Selenium获取新闻...")
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-dev-tools-bridge")
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-plugins")
-        chrome_options.add_argument("--disable-images")
-        chrome_options.add_argument("--disable-javascript-har-promises")
-        chrome_options.add_argument("--disable-web-security")
-        chrome_options.add_argument("--no-first-run")
-        chrome_options.add_argument("--disable-default-apps")
-        chrome_options.add_argument("--disable-background-timer-throttling")
-        chrome_options.add_argument("--disable-renderer-backgrounding")
-        chrome_options.add_argument("--disable-features=TranslateUI")
-        chrome_options.add_argument("--disable-ipc-flooding-protection")
-        chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
         
-        # 设置二进制路径和驱动
-        chrome_options.binary_location = "/usr/bin/google-chrome-stable"
-        service = Service(executable_path="/usr/bin/chromedriver")
-        
-        print(f"[DEBUG] 启动Chrome浏览器...")
+        print(f"[DEBUG] {source_name}: 正在初始化Chrome WebDriver...")
+        service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
-        print(f"[DEBUG] 正在访问页面: {url}")
+        print(f"[DEBUG] {source_name}: WebDriver初始化成功，正在访问页面...")
         driver.get(url)
         
-        print(f"[DEBUG] 等待页面加载...")
-        wait = WebDriverWait(driver, 30)
-        try:
-            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "home__left-body")))
-        except:
-            print(f"[WARNING] 未找到home__left-body元素，尝试其他选择器")
-            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "body")))
+        wait = WebDriverWait(driver, 10)
+        print(f"[DEBUG] {source_name}: 等待页面元素加载...")
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "home__left-body")))
+        print(f"[DEBUG] {source_name}: 页面元素加载成功，获取页面源码...")
         
-        print(f"[DEBUG] 获取页面源码...")
         page_source = driver.page_source
-        print(f"[DEBUG] 页面源码长度: {len(page_source)} 字符")
-        
-        print(f"[DEBUG] 关闭浏览器...")
+        print(f"[DEBUG] {source_name}: 页面源码长度: {len(page_source)} 字符")
         driver.quit()
+        print(f"[DEBUG] {source_name}: WebDriver已关闭")
         
         soup = BeautifulSoup(page_source, "html.parser")
         articles = []
         
         news_items = soup.find_all("a", class_="body-title")
+        print(f"[DEBUG] {source_name}: 找到 {len(news_items)} 个body-title类链接")
         
         if len(news_items) < 5:
             more_items = soup.find_all("a", class_=["article-item", "news-item", "post-title", "title"])
+            print(f"[DEBUG] {source_name}: 额外找到 {len(more_items)} 个通用文章链接")
             news_items.extend(more_items)
         
         if len(news_items) < 5:
             potential_titles = soup.find_all(["h1", "h2", "h3", "h4"], class_=re.compile(r"title|heading|headline"))
             more_items = soup.find_all("a", href=re.compile(r"articles|news|post|reference"))
+            print(f"[DEBUG] {source_name}: 再找到 {len(more_items)} 个潜在新闻链接")
             news_items.extend(more_items)
         
         if len(news_items) < 5:
@@ -180,7 +172,10 @@ def get_jiqizhixin_news(url, source_name):
                 text = link.get_text(strip=True)
                 if len(text) > 10 and ("ai" in text.lower() or "机器" in text or "智能" in text or "AI" in text):
                     ai_links.append(link)
+            print(f"[DEBUG] {source_name}: 找到 {len(ai_links)} 个AI相关链接")
             news_items.extend(ai_links)
+        
+        print(f"[DEBUG] {source_name}: 总共找到 {len(news_items)} 个候选链接")
         
         for item in news_items:
             title = item.get_text(strip=True)
@@ -229,14 +224,18 @@ def get_jiqizhixin_news(url, source_name):
             
             articles.append({"title": title, "link": link, "date": date, "source": source_name})
         
+        print(f"[DEBUG] {source_name}: 成功提取 {len(articles)} 篇文章")
         return articles
     except Exception as e:
-        print(f"获取机器之心新闻时出错: {e}")
+        print(f"[ERROR] 获取机器之心新闻时出错: {e}")
+        import traceback
+        print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return []
 
 def get_36kr_news(url, source_name):
     """获取36氪AI新闻"""
     try:
+        print(f"[DEBUG] {source_name}: 开始使用requests获取新闻...")
         # 先尝试使用requests获取
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -247,7 +246,10 @@ def get_36kr_news(url, source_name):
             "Upgrade-Insecure-Requests": "1"
         }
         
+        print(f"[DEBUG] {source_name}: 发送HTTP请求...")
         response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+        print(f"[DEBUG] {source_name}: HTTP响应状态码: {response.status_code}")
+        print(f"[DEBUG] {source_name}: 响应内容长度: {len(response.text)} 字符")
         response.raise_for_status()
         
         soup = BeautifulSoup(response.text, "html.parser")
@@ -258,6 +260,7 @@ def get_36kr_news(url, source_name):
         
         # 方法1：寻找文章链接
         news_items.extend(soup.find_all("a", class_=["item-title", "article-title", "title", "post-title"]))
+        print(f"[DEBUG] {source_name}: 方法1找到 {len(news_items)} 个标题链接")
         
         # 方法2：寻找包含AI关键词的链接
         if len(news_items) < 5:
@@ -266,10 +269,14 @@ def get_36kr_news(url, source_name):
                 text = link.get_text(strip=True)
                 if len(text) > 10 and any(keyword in text.lower() for keyword in AI_KEYWORDS):
                     news_items.append(link)
+            print(f"[DEBUG] {source_name}: 方法2找到 {len([x for x in news_items if soup.find_all('a', href=True)])} 个AI相关链接")
         
         # 方法3：寻找特定的文章容器
         if len(news_items) < 5:
             news_items.extend(soup.find_all("div", class_=re.compile(r"item|article|post")))
+            print(f"[DEBUG] {source_name}: 方法3找到 {len([x for x in soup.find_all('div', class_=re.compile(r'item|article|post'))])} 个文章容器")
+        
+        print(f"[DEBUG] {source_name}: 总共找到 {len(news_items)} 个候选项目")
         
         for item in news_items:
             # 如果是div容器，需要从中提取链接
@@ -314,9 +321,12 @@ def get_36kr_news(url, source_name):
             
             articles.append({"title": title, "link": link, "date": date, "source": source_name})
         
+        print(f"[DEBUG] {source_name}: 成功提取 {len(articles)} 篇AI相关文章")
         return articles
     except Exception as e:
-        print(f"获取36氪新闻时出错: {e}")
+        print(f"[ERROR] 获取36氪新闻时出错: {e}")
+        import traceback
+        print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return []
 
 def get_infoq_news(url, source_name):
@@ -520,46 +530,19 @@ def get_techcrunch_news(url, source_name):
 def get_generic_news(url, source_name):
     """通用新闻获取方法"""
     try:
-        print(f"[DEBUG] 初始化Chrome浏览器配置(通用方法)...")
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-dev-tools-bridge")
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-plugins")
-        chrome_options.add_argument("--disable-images")
-        chrome_options.add_argument("--disable-javascript-har-promises")
-        chrome_options.add_argument("--disable-web-security")
-        chrome_options.add_argument("--no-first-run")
-        chrome_options.add_argument("--disable-default-apps")
-        chrome_options.add_argument("--disable-background-timer-throttling")
-        chrome_options.add_argument("--disable-renderer-backgrounding")
-        chrome_options.add_argument("--disable-features=TranslateUI")
-        chrome_options.add_argument("--disable-ipc-flooding-protection")
         chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
         
-        # 设置二进制路径和驱动
-        chrome_options.binary_location = "/usr/bin/google-chrome-stable"
-        service = Service(executable_path="/usr/bin/chromedriver")
-        
-        print(f"[DEBUG] 启动Chrome浏览器(通用方法)...")
+        service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
-        print(f"[DEBUG] 正在访问页面(通用方法): {url}")
         driver.get(url)
         
-        print(f"[DEBUG] 等待页面加载(通用方法)...")
-        wait = WebDriverWait(driver, 30)
-        try:
-            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-        except:
-            print(f"[WARNING] 页面加载超时，继续处理")
+        wait = WebDriverWait(driver, 10)
         
-        print(f"[DEBUG] 获取页面源码(通用方法)...")
         page_source = driver.page_source
-        print(f"[DEBUG] 页面源码长度(通用方法): {len(page_source)} 字符")
-        
-        print(f"[DEBUG] 关闭浏览器(通用方法)...")
         driver.quit()
         
         soup = BeautifulSoup(page_source, "html.parser")
@@ -588,7 +571,9 @@ def get_generic_news(url, source_name):
 def get_rss_news(url, source_name):
     """获取RSS/ATOM新闻"""
     try:
+        print(f"[DEBUG] {source_name}: 开始解析RSS源...")
         feed = feedparser.parse(url)
+        print(f"[DEBUG] {source_name}: RSS源包含 {len(feed.entries)} 个条目")
         articles = []
         
         for entry in feed.entries:
@@ -625,14 +610,18 @@ def get_rss_news(url, source_name):
                 "source": source_name
             })
         
+        print(f"[DEBUG] {source_name}: 成功提取 {len(articles)} 篇AI相关文章")
         return articles
     except Exception as e:
-        print(f"获取RSS新闻时出错: {e}")
+        print(f"[ERROR] 获取RSS新闻时出错: {e}")
+        import traceback
+        print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return []
 
 def get_api_news(url, source_name):
     """获取API新闻"""
     try:
+        print(f"[DEBUG] {source_name}: 开始请求API...")
         # 设置请求头
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -640,9 +629,11 @@ def get_api_news(url, source_name):
         }
         
         response = requests.get(url, headers=headers)
+        print(f"[DEBUG] {source_name}: API响应状态码: {response.status_code}")
         response.raise_for_status()
         
         data = response.json()
+        print(f"[DEBUG] {source_name}: API响应数据类型: {type(data)}")
         articles = []
         
         # 处理不同的API响应格式
@@ -709,22 +700,27 @@ def get_api_news(url, source_name):
                         "source": source_name
                     })
         
+        print(f"[DEBUG] {source_name}: 成功提取 {len(articles)} 篇AI相关文章")
         return articles
     except Exception as e:
-        print(f"获取API新闻时出错: {e}")
+        print(f"[ERROR] 获取API新闻时出错: {e}")
+        import traceback
+        print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return []
 
 def get_ai_news():
     """从多个数据源获取AI新闻，按照优先级排序"""
+    print("[INFO] 开始获取AI新闻...")
     all_articles = []
     
     # 从配置文件获取启用的数据源，并按优先级排序
     enabled_sources = [source for source in NEWS_SOURCES if source.get("enabled", True)]
     enabled_sources.sort(key=lambda x: x.get("priority", 3), reverse=True)
+    print(f"[INFO] 启用的新闻源数量: {len(enabled_sources)}")
     
     # 从每个数据源获取新闻
     for source in enabled_sources:
-        print(f"正在从 {source['name']} (优先级: {source.get('priority', 3)}) 获取新闻...")
+        print(f"[INFO] 正在从 {source['name']} (优先级: {source.get('priority', 3)}) 获取新闻...")
         articles = get_ai_news_from_source(source["url"], source["name"])
         
         # 为每篇文章添加优先级信息
@@ -735,6 +731,9 @@ def get_ai_news():
         # 限制每个源的文章数量
         articles = articles[:MAX_ARTICLES_PER_SOURCE]
         all_articles.extend(articles)
+        print(f"[INFO] 从 {source['name']} 获取了 {len(articles)} 篇文章")
+    
+    print(f"[INFO] 总共获取了 {len(all_articles)} 篇文章（包含重复）")
     
     # 去重 - 优先基于标题去重，避免重复内容
     seen_titles = set()
@@ -746,6 +745,8 @@ def get_ai_news():
         if clean_title not in seen_titles and len(clean_title) > 10:
             seen_titles.add(clean_title)
             unique_articles.append(article)
+    
+    print(f"[INFO] 去重后剩余 {len(unique_articles)} 篇文章")
     
     # 按优先级排序文章
     unique_articles.sort(key=lambda x: x.get("priority", 3), reverse=True)
@@ -764,11 +765,16 @@ def get_ai_news():
         if len(priority_articles) >= MAX_TOTAL_ARTICLES:
             break
     
+    print(f"[INFO] 最终筛选后保留 {len(priority_articles)} 篇文章")
+    print(f"[DEBUG] 各优先级文章数量: {priority_counts}")
+    
     return priority_articles
 
 def summarize_news(news_list):
     """使用AI对新闻列表进行摘要"""
     try:
+        print(f"[INFO] 开始生成新闻摘要，共 {len(news_list)} 篇文章...")
+        
         # 构建包含来源信息的新闻文本
         news_items = []
         for news in news_list:
@@ -778,6 +784,9 @@ def summarize_news(news_list):
                 news_items.append(f'标题: {news["title"]} (日期: {news["date"]})')
         news_text = "\n".join(news_items)
         
+        print(f"[DEBUG] 发送给AI的新闻文本长度: {len(news_text)} 字符")
+        print(f"[DEBUG] AI API地址: {client.base_url}")
+        
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
@@ -785,15 +794,26 @@ def summarize_news(news_list):
             ],
             max_tokens=1000
         )
-        print(f"API响应: {response}") # Debugging line
-        return response.choices[0].message.content.strip()
+        print(f"[DEBUG] AI API响应状态: 成功")
+        print(f"[DEBUG] AI API响应内容长度: {len(response.choices[0].message.content)} 字符")
+        
+        summary = response.choices[0].message.content.strip()
+        print(f"[INFO] 新闻摘要生成成功")
+        return summary
     except Exception as e:
-        print(f"生成摘要时出错: {e}")
+        print(f"[ERROR] 生成摘要时出错: {e}")
+        import traceback
+        print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return "无法生成摘要。"
 
 def send_to_feishu(webhook_url, summary, news_list, image_key=None):
     """发送消息到飞书群聊，支持卡片消息格式"""
     try:
+        print(f"[INFO] 开始发送消息到飞书...")
+        print(f"[DEBUG] 飞书Webhook URL: {webhook_url[:50]}...")
+        print(f"[DEBUG] 摘要长度: {len(summary)} 字符")
+        print(f"[DEBUG] 新闻数量: {len(news_list)}")
+        
         headers = {
             "Content-Type": "application/json"
         }
@@ -916,12 +936,19 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
             }
         }
             
+        print(f"[DEBUG] 构建的飞书消息数据大小: {len(json.dumps(data, ensure_ascii=False).encode('utf-8'))} 字节")
+        
         response = requests.post(webhook_url, headers=headers, data=json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        print(f"[DEBUG] 飞书API响应状态码: {response.status_code}")
+        print(f"[DEBUG] 飞书API响应内容: {response.text}")
+        
         response.raise_for_status()
-        print("消息已成功发送到飞书")
+        print("[INFO] 消息已成功发送到飞书")
         return True
     except Exception as e:
-        print(f"发送到飞书时出错: {e}")
+        print(f"[ERROR] 发送到飞书时出错: {e}")
+        import traceback
+        print(f"[ERROR] 详细错误信息: {traceback.format_exc()}")
         return False
 
 def upload_image_to_feishu(image_path, access_token):
@@ -954,98 +981,68 @@ def upload_image_to_feishu(image_path, access_token):
         return None
 
 def main():
-    """主函数 - 支持PySpark环境"""
-    start_time = datetime.now()
+    """主函数"""
     print("=" * 60)
-    print(f"[START] 开始执行AI日报任务 - {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"[START] 开始执行AI日报任务 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     
-    # 初始化PySpark环境（如果可用）
-    spark = None
-    if PYSPARK_AVAILABLE:
-        print("[INFO] 正在初始化PySpark环境...")
-        spark = setup_pyspark_environment()
-        if not spark:
-            print("[WARNING] PySpark初始化失败，降级到独立模式运行")
-    else:
-        print("[INFO] 运行在独立模式（非PySpark环境）")
+    # 飞书应用凭证
+    feishu_app_id = "cli_a8ef4e27bd85900b"
+    feishu_app_secret = "By4Y7Z2NpQvovyJ0Efp2CgyOF8dAC7bV"
     
-    try:
-        # 飞书应用凭证
-        feishu_app_id = "cli_a8ef4e27bd85900b"
-        feishu_app_secret = "By4Y7Z2NpQvovyJ0Efp2CgyOF8dAC7bV"
-        print(f"[INFO] 飞书应用ID: {feishu_app_id}")
-        
-        # 获取tenant_access_token
-        print("[INFO] 正在获取飞书访问令牌...")
-        access_token = get_tenant_access_token(feishu_app_id, feishu_app_secret)
-        if not access_token:
-            print("[ERROR] 无法获取access_token，退出任务。")
-            return
-        print("[SUCCESS] 成功获取访问令牌")
+    print(f"[INFO] 飞书应用ID: {feishu_app_id}")
+    
+    # 获取tenant_access_token
+    print("[INFO] 正在获取飞书访问令牌...")
+    access_token = get_tenant_access_token(feishu_app_id, feishu_app_secret)
+    if not access_token:
+        print("[ERROR] 无法获取access_token，退出任务。")
+        return
 
-        # 获取AI新闻（从多个数据源）
-        print("[INFO] 开始获取AI新闻...")
-        ai_news = get_ai_news()
+    # 获取AI新闻（从多个数据源）
+    print("[INFO] 开始获取AI新闻...")
+    ai_news = get_ai_news()
+    
+    if ai_news:
+        print(f"[SUCCESS] 成功获取 {len(ai_news)} 条新闻")
         
-        if ai_news:
-            print(f"[SUCCESS] 成功获取 {len(ai_news)} 条新闻")
-            
-            # 生成摘要
-            print("[INFO] 正在生成新闻摘要...")
-            summary = summarize_news(ai_news)
-            
-            print("[SUCCESS] 生成的日报摘要:")
-            print("-" * 40)
-            print(summary)
-            print("-" * 40)
-            
-            # 飞书webhook URL
-            feishu_webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/23b17757-5370-4f6c-92ab-7625569ca7a7"
-            print(f"[INFO] 飞书Webhook URL: {feishu_webhook}")
-            
-            # 上传主题图片并发送
-            # 检查图片文件是否存在，如果不存在则跳过图片上传
-            image_path = "/home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg" # 选择一张AI相关的图片
-            image_key = None
-            if os.path.exists(image_path):
-                print("[INFO] 正在上传图片到飞书...")
-                image_key = upload_image_to_feishu(image_path, access_token)
-            else:
-                print(f"[WARNING] 图片文件不存在: {image_path}，已移除图片以确保消息发送成功")
-                # 已移除图片部分，避免可能的图片问题导致消息发送失败
-            
-            print("[INFO] 正在发送消息到飞书...")
-            if image_key:
-                send_to_feishu(feishu_webhook, summary, ai_news, image_key)
-            else:
-                send_to_feishu(feishu_webhook, summary, ai_news) # 如果图片上传失败，则只发送文本
-            
+        # 生成摘要
+        print("[INFO] 开始生成新闻摘要...")
+        summary = summarize_news(ai_news)
+        
+        print("\n" + "=" * 60)
+        print("[SUMMARY] 生成的日报摘要:")
+        print("=" * 60)
+        print(summary)
+        print("=" * 60 + "\n")
+        
+        # 飞书webhook URL
+        feishu_webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/23b17757-5370-4f6c-92ab-7625569ca7a7"
+        
+        # 上传主题图片并发送
+        # 检查图片文件是否存在，如果不存在则跳过图片上传
+        image_path = "/home/ubuntu/upload/search_images/QkPqdKuxZOlT.jpg" # 选择一张AI相关的图片
+        image_key = None
+        if os.path.exists(image_path):
+            print(f"[INFO] 找到图片文件，开始上传: {image_path}")
+            image_key = upload_image_to_feishu(image_path, access_token)
         else:
-            print("[ERROR] 未能获取AI新闻")
-            
-    except Exception as e:
-        print(f"[ERROR] 主函数执行出错: {e}")
-        import traceback
-        print(f"[ERROR] 详细错误信息:\n{traceback.format_exc()}")
+            print(f"[WARNING] 图片文件不存在: {image_path}，已移除图片以确保消息发送成功")
+            # 已移除图片部分，避免可能的图片问题导致消息发送失败
         
-    finally:
-        # 清理PySpark资源
-        if spark:
-            print("[INFO] 正在清理PySpark资源...")
-            try:
-                spark.stop()
-                print("[SUCCESS] PySpark资源已清理")
-            except Exception as e:
-                print(f"[ERROR] 清理PySpark资源时出错: {e}")
+        if image_key:
+            print("[INFO] 开始发送包含图片的飞书消息...")
+            send_to_feishu(feishu_webhook, summary, ai_news, image_key)
+        else:
+            print("[INFO] 开始发送纯文本飞书消息...")
+            send_to_feishu(feishu_webhook, summary, ai_news) # 如果图片上传失败，则只发送文本
         
-        end_time = datetime.now()
-        duration = end_time - start_time
-        print("=" * 60)
-        print(f"[END] AI日报任务完成 - {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"[INFO] 总执行时间: {duration}")
-        print("=" * 60)
+    else:
+        print("[ERROR] 未能获取AI新闻")
+    
+    print("=" * 60)
+    print(f"[END] AI日报任务完成 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 60)
 
 if __name__ == "__main__":
     main()
-
