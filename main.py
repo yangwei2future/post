@@ -229,6 +229,19 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
         # 构建卡片消息内容
         card_elements = []
         
+        # 如果有图片，先添加图片
+        if image_key:
+            card_elements.append({
+                "tag": "img",
+                "img_key": image_key,
+                "alt": {
+                    "tag": "plain_text",
+                    "content": "AI日报主题图片"
+                },
+                "mode": "fit_horizontal",
+                "preview": True
+            })
+        
         # 添加标题
         card_elements.append({
             "tag": "div",
@@ -314,7 +327,15 @@ def send_to_feishu(webhook_url, summary, news_list, image_key=None):
             "msg_type": "interactive",
             "card": {
                 "config": {
-                    "wide_screen_mode": True
+                    "wide_screen_mode": True,
+                    "enable_forward": True
+                },
+                "header": {
+                    "template": "blue",
+                    "title": {
+                        "content": "🤖 AI日报 - {}".format(datetime.now().strftime("%Y年%m月%d日")),
+                        "tag": "plain_text"
+                    }
                 },
                 "elements": card_elements
             }
